@@ -44,4 +44,6 @@ func (conn MongoConnection) Ping() error {
 	return conn.client.Ping(context.TODO(), readpref.Primary())
 }
 
-// TODO: add functions defined in internal/device/repository.go to expose all the proper functions
+func (conn MongoConnection) GetCollection(dbName string, collectionName string) *mongo.Collection {
+	return conn.client.Database(dbName).Collection(collectionName)
+}

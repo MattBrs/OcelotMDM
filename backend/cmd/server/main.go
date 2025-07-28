@@ -45,9 +45,15 @@ func main() {
 		panic(err)
 	}
 
+	deviceCol := mongoConn.GetCollection("ocelotmdm", "devices")
+	if deviceCol == nil {
+		// for testing
+		panic("collection is nil")
+	}
+
 	fmt.Println("Pinged mongoDb instance successfully")
 
 	router := gin.Default()
-	router.GET("/ping", ping) // just for testing if everything works, for now :)
+	router.GET("/ping", ping)    // just for testing if everything works, for now :)
 	router.Run("localhost:8080") // will expose this later with nginx
 }
