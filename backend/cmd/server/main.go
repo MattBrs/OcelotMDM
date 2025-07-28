@@ -27,7 +27,7 @@ func main() {
 		Username:   os.Getenv("MONGO_USERNAME"),
 		Password:   os.Getenv("MONGO_PASSWORD"),
 		AppName:    "OcelotMDM",
-		ClusterURL: "ocelotmdm.oy5pj9q.mongodb.net",
+		ClusterURL: os.Getenv("MONGO_URL"),
 	}
 
 	mongoConn, err := storage.NewMongoConnection(mongoConf)
@@ -49,5 +49,5 @@ func main() {
 
 	router := gin.Default()
 	router.GET("/ping", ping) // just for testing if everything works, for now :)
-	router.Run("localhost:8080")
+	router.Run("localhost:8080") // will expose this later with nginx
 }
