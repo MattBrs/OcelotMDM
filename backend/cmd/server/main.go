@@ -1,16 +1,12 @@
 package main
 
 import (
-	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
 
+	"github.com/MattBrs/OcelotMDM/internal/storage"
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/v2/mongo"
-	"go.mongodb.org/mongo-driver/v2/mongo/options"
-	"go.mongodb.org/mongo-driver/v2/mongo/readpref"
 )
 
 // gin test structure
@@ -27,29 +23,25 @@ func ping(c *gin.Context) {
 func main() {
 	// TODO: initialize mongoDB connection, initialize services and add
 	// proper api calls
-	mongoUser := os.Getenv("MONGO_USERNAME")
-	mongoPassword := os.Getenv("MONGO_PASSWORD")
-	if mongoUser == "" || mongoPassword == "" {
-		panic(errors.New("mongo credentials are not set"))
+	mongoConf := storage.DbConfig{
+		Username:   os.Getenv("MONGO_USERNAME"),
+		Password:   os.Getenv("MONGO_PASSWORD"),
+		AppName:    "OcelotMDM",
+		ClusterURL: "ocelotmdm.oy5pj9q.mongodb.net",
 	}
 
-	mongoConnectionStr := fmt.Sprintf("mongodb+srv://%s:%s@ocelotmdm.oy5pj9q.mongodb.net/?retryWrites=true&w=majority&appName=OcelotMDM", mongoUser, mongoPassword)
-
-	serverApi := options.ServerAPI(options.ServerAPIVersion1)
-	opts := options.Client().ApplyURI(mongoConnectionStr).SetServerAPIOptions(serverApi)
-
-	mongoClient, err := mongo.Connect(opts)
+	mongoConn, err := storage.NewMongoConnection(mongoConf)
 	if err != nil {
 		panic(err)
 	}
 
 	defer func() {
-		if err = mongoClient.Disconnect(context.TODO()); err != nil {
+		if err = mongoConn.CloseMongoConnection(); err != nil {
 			panic(err)
 		}
 	}()
 
-	if err = mongoClient.Ping(context.TODO(), readpref.Primary()); err != nil {
+	if err = mongoConn.Ping(); err != nil {
 		panic(err)
 	}
 
