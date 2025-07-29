@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/MattBrs/OcelotMDM/internal/api"
+	"github.com/MattBrs/OcelotMDM/internal/device"
 	"github.com/MattBrs/OcelotMDM/internal/storage"
 	"github.com/gin-gonic/gin"
 )
@@ -45,15 +47,17 @@ func main() {
 		panic(err)
 	}
 
-	deviceCol := mongoConn.GetCollection("ocelotmdm", "devices")
-	if deviceCol == nil {
-		// for testing
-		panic("collection is nil")
-	}
-
 	fmt.Println("Pinged mongoDb instance successfully")
 
+	deviceCol := mongoConn.GetCollection("ocelotmdm", "devices")
+
+	repo := device.NewMongoRepository(deviceCol)
+	deviceService := device.NewService(repo)
+	deviceHandler := api.NewDeviceHandler(deviceService)
+
 	router := gin.Default()
-	router.GET("/ping", ping)    // just for testing if everything works, for now :)
+	router.GET("/ping", ping) // just for testing if everything works, for now :)
+	router.POST("/devices", deviceHandler.AddNewDevice)
+	router.GET("/devices", deviceHandler.ListDevices)
 	router.Run("localhost:8080") // will expose this later with nginx
 }
