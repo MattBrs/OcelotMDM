@@ -10,13 +10,9 @@ type Service struct {
 }
 
 type DeviceFilter struct {
-	Id      string
-	Name    string
-	Status  string
-	Limit   int
-	Offset  int
-	SortBy  string
-	SortDir string
+	Id     string
+	Name   string
+	Status string
 }
 
 func NewService(repo Repository) *Service {
@@ -42,5 +38,10 @@ func (s *Service) MarkOnline(ctx context.Context, id string) error {
 }
 
 func (s *Service) ListDevices(ctx context.Context, filter DeviceFilter) ([]*Device, error) {
-	return nil, errors.New("TODO")
+	devices, err := s.repo.List(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	return devices, nil
 }

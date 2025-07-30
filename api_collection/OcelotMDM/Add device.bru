@@ -1,0 +1,25 @@
+meta {
+  name: Add device
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8080/devices
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "Name": "device-test-1",
+    "Type": "Test",
+    "Status": "Online",
+    "IPAddress": "Online",
+    "LastSeen": 1753857778
+  }
+}
+
+settings {
+  encodeUrl: true
+}

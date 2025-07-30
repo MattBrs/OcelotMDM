@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
@@ -22,6 +23,7 @@ func (repo MongoDeviceRepository) Create(ctx context.Context, device *Device) er
 	// 	return err
 	// }
 
+	device.ID = primitive.NewObjectID()
 	res, err := repo.collection.InsertOne(ctx, device)
 	if err != nil {
 		return err
@@ -76,10 +78,6 @@ func (repo MongoDeviceRepository) List(ctx context.Context, filter DeviceFilter)
 
 	if filter.Name != "" {
 		mongoFilter["name"] = filter.Name
-	}
-
-	if filter.Limit > 0 {
-		mongoFilter["limit"] = filter.Limit
 	}
 
 	cursor, err := repo.collection.Find(ctx, mongoFilter)

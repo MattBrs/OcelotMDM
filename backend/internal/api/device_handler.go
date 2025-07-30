@@ -2,7 +2,6 @@ package api
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/MattBrs/OcelotMDM/internal/device"
 	"github.com/gin-gonic/gin"
@@ -36,22 +35,18 @@ func (h *DeviceHandler) ListDevices(ctx *gin.Context) {
 	id := ctx.Query("id")
 	status := ctx.Query("status")
 	name := ctx.Query("name")
-	limit, err := strconv.Atoi(ctx.Query("limit"))
-	if err != nil {
-		limit = 0
-	}
 
 	deviceFilter := device.DeviceFilter{
 		Id:     id,
 		Status: status,
 		Name:   name,
-		Limit:  limit,
 	}
 
 	devices, err := h.service.ListDevices(ctx.Request.Context(), deviceFilter)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Could not add the device"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Could not fetch devices", "info": err.Error()})
+		return
 	}
 
-	ctx.JSON(http.StatusFound, gin.H{"error": "TODO"})
+	ctx.JSON(http.StatusFound, devices)
 }
