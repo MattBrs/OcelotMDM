@@ -30,11 +30,6 @@ func (repo MongoTokenRepository) Add(ctx context.Context, token Token) error {
 
 func (repo MongoTokenRepository) Verify(ctx context.Context, otp string) (Token, error) {
 	filter := bson.D{{Key: "token", Value: otp}}
-	fmt.Println("using filter:", filter)
-
-	// var result bson.M
-	// err := repo.collection.FindOneAndDelete(ctx, filter).Decode(&result)
-	// fmt.Printf("%+v\n", result)
 
 	var token Token
 	err := repo.collection.FindOneAndDelete(ctx, filter).Decode(&token)

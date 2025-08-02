@@ -39,7 +39,7 @@ func (h *TokenHandler) VerifyToken(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(
 			http.StatusInternalServerError,
-			gin.H{"error": "An error occurred while parsing the token", "info": err.Error()},
+			gin.H{"error": "An error occurred while parsing the token"},
 		)
 		return
 	}

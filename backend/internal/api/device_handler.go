@@ -24,7 +24,10 @@ func (h *DeviceHandler) AddNewDevice(ctx *gin.Context) {
 
 	err := h.service.RegisterNewDevice(ctx.Request.Context(), &req)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Could not add the device"})
+		ctx.JSON(
+			http.StatusInternalServerError,
+			gin.H{"error": "Could not add the device"},
+		)
 		return
 	}
 
@@ -44,7 +47,10 @@ func (h *DeviceHandler) ListDevices(ctx *gin.Context) {
 
 	devices, err := h.service.ListDevices(ctx.Request.Context(), deviceFilter)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Could not fetch devices", "info": err.Error()})
+		ctx.JSON(
+			http.StatusInternalServerError,
+			gin.H{"error": "Could not fetch devices"},
+		)
 		return
 	}
 
