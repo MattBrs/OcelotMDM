@@ -18,11 +18,6 @@ func NewMongoRepository(col *mongo.Collection) MongoDeviceRepository {
 }
 
 func (repo MongoDeviceRepository) Create(ctx context.Context, device *Device) error {
-	// doc, err := bson.Marshal(device)
-	// if err != nil {
-	// 	return err
-	// }
-
 	device.ID = primitive.NewObjectID()
 	res, err := repo.collection.InsertOne(ctx, device)
 	if err != nil {

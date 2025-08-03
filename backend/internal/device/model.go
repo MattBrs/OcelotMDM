@@ -6,8 +6,8 @@ type Device struct {
 	ID        primitive.ObjectID `bson:"_id,omitempty"`
 	Name      string             `bson:"name"`
 	Type      string             `bson:"type"`
-	Status    string             `bson:"status"`
-	IPAddress string             `bson:"ip_address"`
-	LastSeen  int64              `bson:"last_seen"`
+	Status    string             `bson:"status,omitempty"`
+	IPAddress string             `bson:"ip_address,omitempty"`
+	LastSeen  int64              `bson:"last_seen,omitempty"`
 	Tags      []string           `bson:"tags,omitempty"`
 }

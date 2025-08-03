@@ -2,11 +2,13 @@ package device
 
 import (
 	"context"
-	"errors"
+
+	"github.com/MattBrs/OcelotMDM/internal/token"
 )
 
 type Service struct {
-	repo Repository
+	repo         Repository
+	tokenService *token.Service
 }
 
 type DeviceFilter struct {
@@ -15,13 +17,26 @@ type DeviceFilter struct {
 	Status string
 }
 
-func NewService(repo Repository) *Service {
-	return &Service{repo: repo}
+func NewService(repo Repository, tokenService *token.Service) *Service {
+	return &Service{repo: repo, tokenService: tokenService}
 }
 
-func (s *Service) RegisterNewDevice(ctx context.Context, dev *Device) error {
+func (s *Service) RegisterNewDevice(ctx context.Context, dev *Device, otp string) error {
 	if dev.Name == "" {
-		return errors.New("empty name")
+		return ErrEmptyName
+	}
+
+	if dev.Type == "" {
+		return ErrEmptyType
+	}
+
+	otpValid, err := s.tokenService.Verify(ctx, otp)
+	if err != nil {
+		return err
+	}
+
+	if !otpValid {
+		return ErrInvalidOtp
 	}
 
 	return s.repo.Create(ctx, dev)
