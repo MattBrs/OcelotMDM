@@ -38,3 +38,13 @@ fi
 
 echo "Using $otp for enrollment of a device of type '$type'"
 
+res="$(curl -H 'Content-Type: application/json' \
+      --silent \
+      -w "\n%{http_code}\n" \
+      -d "{ \"otp\":\"$otp\",\"type\":\"$type\"}" \
+      -X POST \
+      http://localhost:8080/devices)"
+
+# TODO: parse res by first reading the code and if it's 200
+# save the following data into a configuration file
+echo "res: $res"
