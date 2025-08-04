@@ -7,6 +7,7 @@ import (
 
 	"github.com/MattBrs/OcelotMDM/internal/api/dto"
 	"github.com/MattBrs/OcelotMDM/internal/device"
+	"github.com/MattBrs/OcelotMDM/internal/token"
 	"github.com/gin-gonic/gin"
 	"github.com/goombaio/namegenerator"
 )
@@ -45,6 +46,11 @@ func (h *DeviceHandler) AddNewDevice(ctx *gin.Context) {
 			ctx.JSON(
 				http.StatusInternalServerError,
 				gin.H{"error": "the otp is no longer valid"},
+			)
+		case errors.Is(err, token.ErrOtpNotFound):
+			ctx.JSON(
+				http.StatusInternalServerError,
+				gin.H{"error": "the otp was not found"},
 			)
 		default:
 			ctx.JSON(

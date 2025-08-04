@@ -34,7 +34,7 @@ func (repo MongoTokenRepository) Verify(ctx context.Context, otp string) (Token,
 	var token Token
 	err := repo.collection.FindOneAndDelete(ctx, filter).Decode(&token)
 	if err != nil {
-		return token, err
+		return token, ErrOtpNotFound
 	}
 
 	return token, nil
