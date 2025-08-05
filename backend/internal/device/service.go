@@ -52,6 +52,21 @@ func (s *Service) MarkOnline(ctx context.Context, id string) error {
 	return s.repo.Update(ctx, dev)
 }
 
+func (s *Service) UpdateAddress(ctx context.Context, name string, ip string) error {
+	dev, err := s.repo.GetByName(ctx, name)
+	if err != nil {
+		return err
+	}
+
+	dev.IPAddress = ip
+	err = s.repo.Update(ctx, dev)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (s *Service) ListDevices(ctx context.Context, filter DeviceFilter) ([]*Device, error) {
 	devices, err := s.repo.List(ctx, filter)
 	if err != nil {

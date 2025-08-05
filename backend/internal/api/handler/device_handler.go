@@ -90,3 +90,40 @@ func (h *DeviceHandler) ListDevices(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusFound, devices)
 }
+
+func (h *DeviceHandler) UpdateDeviceAddress(ctx *gin.Context) {
+	var req dto.UpdateAddressRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(
+			http.StatusBadRequest,
+			dto.UpdateAddressResponse{Error: "Could not parse JSON"},
+		)
+	}
+
+	if err := h.service.UpdateAddress(ctx, req.Name, req.IPAddress); err != nil {
+		switch {
+		case errors.Is(err, device.ErrDeviceNotFound):
+			ctx.JSON(
+				http.StatusInternalServerError,
+				dto.DeviceCreationResponse{Error: "device was not found"},
+			)
+		case errors.Is(err, device.ErrDeviceNotUpdated):
+			ctx.JSON(
+				http.StatusInternalServerError,
+				dto.DeviceCreationResponse{Error: "device addr was not updated"},
+			)
+		default:
+			ctx.JSON(
+				http.StatusInternalServerError,
+				dto.DeviceCreationResponse{Error: "generic error"},
+			)
+		}
+
+		return
+	}
+
+	ctx.JSON(
+		http.StatusOK,
+		dto.UpdateAddressResponse{},
+	)
+}

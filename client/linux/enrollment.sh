@@ -47,4 +47,19 @@ res="$(curl -H 'Content-Type: application/json' \
 
 # TODO: parse res by first reading the code and if it's 200
 # save the following data into a configuration file
-echo "res: $res"
+n=0
+while IFS= read -r line
+do
+    resArrat+=$line
+    n=$(($n + 1))
+    echo "line: $line"
+done < <(printf '%s\n' "$res")
+
+if [ $n -eq 2 ]; then
+    if [ ${arr[1]} -eq 200 ]; then
+        echo "success"
+    else
+        echo "error"
+    fi
+fi
+echo $n

@@ -7,6 +7,7 @@ import "context"
 type Repository interface {
 	Create(ctx context.Context, device *Device) error
 	GetByID(ctx context.Context, id string) (*Device, error)
+	GetByName(ctx context.Context, name string) (*Device, error)
 	Update(ctx context.Context, device *Device) error
 	Delete(ctx context.Context, id string) error
 	List(ctx context.Context, filter DeviceFilter) ([]*Device, error)

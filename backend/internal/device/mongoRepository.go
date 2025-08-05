@@ -40,11 +40,37 @@ func (repo MongoDeviceRepository) GetByID(ctx context.Context, id string) (*Devi
 	return &device, nil
 }
 
+func (repo MongoDeviceRepository) GetByName(ctx context.Context, name string) (*Device, error) {
+	filter := bson.D{{Key: "name", Value: name}}
+	var device Device
+	err := repo.collection.FindOne(ctx, filter).Decode(&device)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &device, nil
+}
+
 func (repo MongoDeviceRepository) Update(ctx context.Context, device *Device) error {
+	updateData, err := bson.Marshal(device)
+	if err != nil {
+		return err
+	}
+
+	var updateMap bson.M
+	if err := bson.Unmarshal(updateData, &updateMap); err != nil {
+		return err
+	}
+
 	filter := bson.D{{Key: "_id", Value: device.ID}}
-	res := repo.collection.FindOneAndUpdate(ctx, filter, device)
-	if res.Err() != nil {
-		return res.Err()
+	update := bson.D{{Key: "$set", Value: updateMap}}
+
+	delete(updateMap, "_id")
+
+	_, err = repo.collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return ErrDeviceNotUpdated
 	}
 
 	return nil

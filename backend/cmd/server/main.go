@@ -65,6 +65,7 @@ func main() {
 	router.GET("/ping", ping) // just for testing if everything works, for now :)
 	router.POST("/devices", deviceHandler.AddNewDevice)
 	router.GET("/devices", deviceHandler.ListDevices)
+	router.POST("/devices/updateAddress", deviceHandler.UpdateDeviceAddress)
 	router.POST("/token/generate", tokenHandler.RequestToken)
 	router.Run("localhost:8080") // will expose this later with nginx
 }

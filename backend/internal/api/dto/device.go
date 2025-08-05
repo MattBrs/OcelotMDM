@@ -7,5 +7,15 @@ type DeviceCreationRequest struct {
 
 type DeviceCreationResponse struct {
 	// TODO: add needed client certificates and configurations in the response
-	Name string ``
+	Name  string `json:"name"`
+	Error string `json:"error,omitempty"`
+}
+
+type UpdateAddressRequest struct {
+	Name      string `json:"name"`
+	IPAddress string `json:"ip_address"`
+}
+
+type UpdateAddressResponse struct {
+	Error string `json:"error,omitempty"`
 }
