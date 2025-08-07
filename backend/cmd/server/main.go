@@ -67,5 +67,5 @@ func main() {
 	router.GET("/devices", deviceHandler.ListDevices)
 	router.POST("/devices/updateAddress", deviceHandler.UpdateDeviceAddress)
 	router.POST("/token/generate", tokenHandler.RequestToken)
-	router.Run("localhost:8080") // will expose this later with nginx
+	router.Run(":8080") // will expose this later with nginx
 }
