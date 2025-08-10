@@ -9,7 +9,9 @@ import (
 	"github.com/MattBrs/OcelotMDM/internal/device"
 	"github.com/MattBrs/OcelotMDM/internal/storage"
 	"github.com/MattBrs/OcelotMDM/internal/token"
+	"github.com/MattBrs/OcelotMDM/internal/user"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 // gin test structure
@@ -24,8 +26,11 @@ func ping(c *gin.Context) {
 }
 
 func main() {
-	// TODO: initialize mongoDB connection, initialize services and add
-	// proper api calls
+	err := godotenv.Load()
+	if err != nil {
+		panic(err)
+	}
+
 	mongoConf := storage.DbConfig{
 		Username:   os.Getenv("MONGO_USERNAME"),
 		Password:   os.Getenv("MONGO_PASSWORD"),
@@ -50,8 +55,13 @@ func main() {
 
 	fmt.Println("Pinged mongoDb instance successfully")
 
+	userCol := mongoConn.GetCollection("ocelotmdm", "users")
 	deviceCol := mongoConn.GetCollection("ocelotmdm", "devices")
 	tokenCol := mongoConn.GetCollection("ocelotmdm", "tokens")
+
+	userRepo := user.NewMongoRepository(userCol)
+	userService := user.NewService(userRepo)
+	userHandler := api.NewUserHandler(userService)
 
 	tokenRepo := token.NewMongoRepository(tokenCol)
 	tokenService := token.NewService(tokenRepo)
@@ -67,5 +77,8 @@ func main() {
 	router.GET("/devices", deviceHandler.ListDevices)
 	router.POST("/devices/updateAddress", deviceHandler.UpdateDeviceAddress)
 	router.POST("/token/generate", tokenHandler.RequestToken)
+
+	router.POST("/user/create", userHandler.CreateUser)
+	router.POST("/user/login", userHandler.Login)
 	router.Run(":8080") // will expose this later with nginx
 }

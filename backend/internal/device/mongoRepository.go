@@ -63,10 +63,9 @@ func (repo MongoDeviceRepository) Update(ctx context.Context, device *Device) er
 		return err
 	}
 
+	delete(updateMap, "_id")
 	filter := bson.D{{Key: "_id", Value: device.ID}}
 	update := bson.D{{Key: "$set", Value: updateMap}}
-
-	delete(updateMap, "_id")
 
 	_, err = repo.collection.UpdateOne(ctx, filter, update)
 	if err != nil {

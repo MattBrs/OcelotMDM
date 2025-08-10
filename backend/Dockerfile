@@ -15,6 +15,7 @@ FROM alpine:latest
 WORKDIR /app
 
 COPY --from=builder /app/backend .
+COPY --from=builder /app/.env .
 
 EXPOSE 8080
 CMD ["./backend"]
