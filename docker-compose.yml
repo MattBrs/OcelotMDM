@@ -1,5 +1,6 @@
 services:
   backend:
+    build: ./backend
     image: my-backend:latest
     container_name: backend
     restart: unless-stopped
