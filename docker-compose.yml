@@ -1,0 +1,22 @@
+services:
+  backend:
+    image: my-backend:latest
+    container_name: backend
+    restart: unless-stopped
+    expose:
+      - "8080"
+    env_file:
+      - ./backend/.env
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      - backend

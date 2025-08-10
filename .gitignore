@@ -40,3 +40,5 @@
 .vscode
 
 build/
+certs/
+.env
