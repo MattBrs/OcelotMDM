@@ -84,9 +84,14 @@ func (repo *MongoUserRepository) Update(ctx context.Context, user *User) error {
 }
 
 func (repo *MongoUserRepository) GetById(ctx context.Context, id string) (*User, error) {
-	filter := bson.D{{Key: "_id", Value: id}}
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+
+	filter := bson.D{{Key: "_id", Value: objID}}
 	var user User
-	err := repo.collection.FindOne(ctx, filter).Decode(&user)
+	err = repo.collection.FindOne(ctx, filter).Decode(&user)
 
 	if err != nil {
 		return nil, ErrUserNotFound

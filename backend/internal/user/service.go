@@ -100,7 +100,7 @@ func (s *Service) LoginUser(ctx context.Context, username string, pwd string) (*
 	}
 
 	tokenGenerator := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":  foundUser.ID.String(),
+		"id":  foundUser.ID.Hex(),
 		"exp": time.Now().Add(time.Hour * 24).Unix(),
 	})
 
@@ -110,4 +110,13 @@ func (s *Service) LoginUser(ctx context.Context, username string, pwd string) (*
 	}
 
 	return &token, nil
+}
+
+func (s *Service) GetUserById(ctx context.Context, id string) (*User, error) {
+	foundUser, err := s.repo.GetById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return foundUser, nil
 }

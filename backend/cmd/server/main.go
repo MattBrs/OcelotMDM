@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/MattBrs/OcelotMDM/internal/api/handler"
+	"github.com/MattBrs/OcelotMDM/internal/api/interceptor"
 	"github.com/MattBrs/OcelotMDM/internal/device"
 	"github.com/MattBrs/OcelotMDM/internal/storage"
 	"github.com/MattBrs/OcelotMDM/internal/token"
@@ -63,6 +64,8 @@ func main() {
 	userService := user.NewService(userRepo)
 	userHandler := api.NewUserHandler(userService)
 
+	authInterceptor := interceptor.NewAuthInterceptor(userService)
+
 	tokenRepo := token.NewMongoRepository(tokenCol)
 	tokenService := token.NewService(tokenRepo)
 	tokenHandler := api.NewTokenHandler(tokenService)
@@ -75,8 +78,8 @@ func main() {
 	router.GET("/ping", ping) // just for testing if everything works, for now :)
 	router.POST("/devices", deviceHandler.AddNewDevice)
 	router.GET("/devices", deviceHandler.ListDevices)
-	router.POST("/devices/updateAddress", deviceHandler.UpdateDeviceAddress)
-	router.POST("/token/generate", tokenHandler.RequestToken)
+	router.POST("/devices/updateAddress", authInterceptor.CheckAuth, deviceHandler.UpdateDeviceAddress)
+	router.POST("/token/generate", authInterceptor.CheckAuth, tokenHandler.RequestToken)
 
 	router.POST("/user/create", userHandler.CreateUser)
 	router.POST("/user/login", userHandler.Login)
