@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -35,12 +36,13 @@ func (h *UserHandler) CreateUser(ctx *gin.Context) {
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 		UpdatedBy: primitive.NewObjectID(),
-		Enabled:   true,
+		Enabled:   false,
 	}
 
 	res := dto.CreateUserResponse{}
 	err := h.service.CreateNewUser(ctx.Request.Context(), &newUser)
 	if err != nil {
+		fmt.Println(err.Error())
 		switch {
 		case errors.Is(err, user.ErrUsernameTaken):
 			res.Error = "username already taken"
@@ -48,6 +50,8 @@ func (h *UserHandler) CreateUser(ctx *gin.Context) {
 			res.Error = "passwords does not follow security guidelines"
 		case errors.Is(err, user.ErrUsernameNotValid):
 			res.Error = "username is not valid"
+		case errors.Is(err, user.ErrFailedToConvertID):
+			res.Error = "failed to convert id"
 		default:
 			res.Error = "generic error"
 		}
@@ -89,6 +93,8 @@ func (h *UserHandler) Login(ctx *gin.Context) {
 			res.Error = "username or password are not correct"
 		case errors.Is(err, user.ErrTokenGeneration):
 			res.Error = "there was an error while generating the token"
+		case errors.Is(err, user.ErrUserNotAuthorized):
+			res.Error = "user is not enabled. contact an administrator"
 		default:
 			res.Error = "generic error"
 		}

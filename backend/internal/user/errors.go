@@ -3,6 +3,7 @@ package user
 import "errors"
 
 var (
+	ErrUserNotAuthorized = errors.New("user is not enabled by an administrator")
 	ErrUserNotFound      = errors.New("user was not found")
 	ErrCouldNotHashPwd   = errors.New("error hashing pwd")
 	ErrFailedToConvertID = errors.New("failed to convert objectID to primitive")

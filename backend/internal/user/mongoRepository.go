@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -20,16 +21,13 @@ func (repo *MongoUserRepository) Create(ctx context.Context, user *User) (*strin
 	user.ID = primitive.NewObjectID()
 	res, err := repo.collection.InsertOne(ctx, user)
 	if err != nil {
+		fmt.Println("insertOne error:", err.Error())
 		return nil, err
 	}
 
-	oid, ok := res.InsertedID.(primitive.ObjectID)
-	if !ok {
-		return nil, ErrFailedToConvertID
-	}
+	oid := fmt.Sprintf("%s", res.InsertedID)
 
-	oidStr := oid.String()
-	return &oidStr, nil
+	return &oid, nil
 }
 
 func (repo *MongoUserRepository) List(ctx context.Context, filter UserFilter) ([]*User, error) {

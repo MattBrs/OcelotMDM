@@ -39,14 +39,11 @@ func checkPasswordSafety(password string) bool {
 	for _, char := range password {
 		if unicode.IsUpper(char) {
 			hasUppercase = true
-			fmt.Println("hasUppercase")
 		} else if unicode.IsLower(char) {
 			HasLowercase = true
-			fmt.Println("has lowercase")
 		} else if unicode.IsDigit(char) {
 			hasDigit = true
 		} else {
-			fmt.Println("has symbol")
 			hasSymbol = true
 		}
 	}
@@ -92,6 +89,10 @@ func (s *Service) LoginUser(ctx context.Context, username string, pwd string) (*
 	foundUser, err := s.repo.GetByUsername(ctx, username)
 	if err != nil {
 		return nil, err
+	}
+
+	if !foundUser.Enabled {
+		return nil, ErrUserNotAuthorized
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(foundUser.Password), []byte(pwd))
