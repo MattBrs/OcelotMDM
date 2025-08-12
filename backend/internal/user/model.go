@@ -14,4 +14,5 @@ type User struct {
 	UpdatedAt time.Time          `bson:"updated_at"`
 	UpdatedBy primitive.ObjectID `bson:"updated_by"`
 	Enabled   bool               `bson:"enabled"`
+	Admin     bool               `bson:"admin"`
 }

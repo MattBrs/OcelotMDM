@@ -37,6 +37,7 @@ func (h *UserHandler) CreateUser(ctx *gin.Context) {
 		UpdatedAt: time.Now(),
 		UpdatedBy: primitive.NewObjectID(),
 		Enabled:   false,
+		Admin:     false,
 	}
 
 	res := dto.CreateUserResponse{}
@@ -104,4 +105,61 @@ func (h *UserHandler) Login(ctx *gin.Context) {
 	}
 	res.Token = *token
 	ctx.JSON(http.StatusOK, res)
+}
+
+func (h *UserHandler) EnableUser(ctx *gin.Context) {
+	ctxUser, ok := ctx.Get("currentUser")
+	if !ok {
+		ctx.JSON(
+			http.StatusUnauthorized,
+			dto.UpdateUserEnableStatusResponseErr{
+				Error: "you must be logged in to perform this acton",
+			},
+		)
+		return
+	}
+
+	loggedUser := ctxUser.(*user.User)
+	if !loggedUser.Admin {
+		ctx.JSON(
+			http.StatusUnauthorized,
+			dto.UpdateUserEnableStatusResponseErr{
+				Error: "user is not authorized",
+			},
+		)
+		return
+	}
+
+	var req dto.UpdateUserEnableStatusRequest
+	err := ctx.ShouldBindJSON(&req)
+	if err != nil {
+		ctx.JSON(
+			http.StatusBadRequest,
+			dto.UpdateUserEnableStatusResponseErr{
+				Error: "could not parse json",
+			},
+		)
+		return
+	}
+
+	err = h.service.UpdateUserEnabledStatus(ctx, req.Username, req.Enabled)
+	if err != nil {
+		var res dto.UpdateUserEnableStatusResponseErr
+		switch {
+		case errors.Is(err, user.ErrUserNotFound):
+			res.Error = "user was not found"
+		case errors.Is(err, user.ErrUserNotUpdated):
+			res.Error = "an error occurred while updating the user"
+		default:
+			fmt.Println(err.Error())
+			res.Error = "generic error"
+		}
+		ctx.JSON(http.StatusUnauthorized, res)
+		return
+	}
+
+	ctx.JSON(
+		http.StatusOK,
+		req,
+	)
 }

@@ -18,6 +18,8 @@ type Service struct {
 type UserFilter struct {
 	Id       string
 	Username string
+	Enabled  *bool
+	Admin    *bool
 }
 
 func NewService(repo MongoUserRepository) *Service {
@@ -120,4 +122,35 @@ func (s *Service) GetUserById(ctx context.Context, id string) (*User, error) {
 	}
 
 	return foundUser, nil
+}
+
+func (s *Service) UpdateUserEnabledStatus(
+	ctx context.Context,
+	name string,
+	enabled bool,
+) error {
+	usr, err := s.repo.GetByUsername(ctx, name)
+	if err != nil {
+		return err
+	}
+
+	usr.Enabled = enabled
+	err = s.repo.Update(ctx, usr)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Service) QueryUsers(
+	ctx context.Context,
+	filter UserFilter,
+) ([]*User, error) {
+	users, err := s.repo.List(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	return users, nil
 }

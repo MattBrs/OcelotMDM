@@ -40,6 +40,14 @@ func (repo *MongoUserRepository) List(ctx context.Context, filter UserFilter) ([
 		mongoFilter["username"] = filter.Username
 	}
 
+	if filter.Admin != nil {
+		mongoFilter["admin"] = filter.Admin
+	}
+
+	if filter.Enabled != nil {
+		mongoFilter["enabled"] = filter.Enabled
+	}
+
 	cursor, err := repo.collection.Find(ctx, mongoFilter)
 	if err != nil {
 		return nil, err
