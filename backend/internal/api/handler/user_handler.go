@@ -142,6 +142,16 @@ func (h *UserHandler) EnableUser(ctx *gin.Context) {
 		return
 	}
 
+	if req.Username == loggedUser.Username {
+		ctx.JSON(
+			http.StatusBadRequest,
+			dto.UpdateUserEnableStatusResponseErr{
+				Error: "user is forbidden to remove permissions to self",
+			},
+		)
+		return
+	}
+
 	err = h.service.UpdateUserEnabledStatus(ctx, req.Username, req.Enabled)
 	if err != nil {
 		var res dto.UpdateUserEnableStatusResponseErr
