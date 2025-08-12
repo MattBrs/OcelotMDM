@@ -18,15 +18,21 @@ func NewMongoConnection(config DbConfig) (MongoConnection, error) {
 		return MongoConnection{nil}, err
 	}
 
-	mongoConnectionStr := fmt.Sprintf("mongodb+srv://%s:%s@%s/?retryWrites=true&w=majority&appName=%s",
-		config.Username,
-		config.Password,
+	mongoConnectionStr := fmt.Sprintf("mongodb+srv://%s/?retryWrites=true&w=majority&appName=%s",
 		config.ClusterURL,
 		config.AppName,
 	)
 
+	credential := options.Credential{
+		Username: config.Username,
+		Password: config.Password,
+	}
+
 	serverApi := options.ServerAPI(options.ServerAPIVersion1)
-	opts := options.Client().ApplyURI(mongoConnectionStr).SetServerAPIOptions(serverApi)
+	opts := options.Client().
+		ApplyURI(mongoConnectionStr).
+		SetAuth(credential).
+		SetServerAPIOptions(serverApi)
 
 	mongoClient, err := mongo.Connect(opts)
 	if err != nil {
