@@ -29,6 +29,12 @@ func (h *DeviceHandler) AddNewDevice(ctx *gin.Context) {
 		return
 	}
 
+	if req.Otp == "" || req.Type == "" || req.Architecture == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
+		return
+
+	}
+
 	name := h.generator.Generate()
 	dev := device.Device{
 		Name:         name,
