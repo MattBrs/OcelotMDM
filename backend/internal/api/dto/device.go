@@ -1,8 +1,9 @@
 package dto
 
 type DeviceCreationRequest struct {
-	Otp  string `json:"otp"`
-	Type string `json:"type"`
+	Otp          string `json:"otp"`
+	Type         string `json:"type"`
+	Architecture string `json:"architecture"`
 }
 
 type DeviceCreationResponse struct {

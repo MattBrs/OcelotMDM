@@ -12,9 +12,10 @@ type Service struct {
 }
 
 type DeviceFilter struct {
-	Id     string
-	Name   string
-	Status string
+	Id           string
+	Name         string
+	Status       string
+	Architecture string
 }
 
 func NewService(repo Repository, tokenService *token.Service) *Service {

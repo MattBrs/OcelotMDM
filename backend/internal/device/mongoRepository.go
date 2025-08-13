@@ -100,6 +100,10 @@ func (repo MongoDeviceRepository) List(ctx context.Context, filter DeviceFilter)
 		mongoFilter["name"] = filter.Name
 	}
 
+	if filter.Architecture != "" {
+		mongoFilter["architecture"] = filter.Architecture
+	}
+
 	cursor, err := repo.collection.Find(ctx, mongoFilter)
 	if err != nil {
 		return nil, err

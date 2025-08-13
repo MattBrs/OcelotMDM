@@ -31,12 +31,13 @@ func (h *DeviceHandler) AddNewDevice(ctx *gin.Context) {
 
 	name := h.generator.Generate()
 	dev := device.Device{
-		Name:      name,
-		Type:      req.Type,
-		IPAddress: "Unk",
-		Status:    "Unk",
-		LastSeen:  time.Now().Unix(),
-		Tags:      []string{},
+		Name:         name,
+		Type:         req.Type,
+		IPAddress:    "Unk",
+		Status:       "Unk",
+		LastSeen:     time.Now().Unix(),
+		Tags:         []string{},
+		Architecture: req.Architecture,
 	}
 
 	err := h.service.RegisterNewDevice(ctx.Request.Context(), &dev, req.Otp)
@@ -72,11 +73,13 @@ func (h *DeviceHandler) ListDevices(ctx *gin.Context) {
 	id := ctx.Query("id")
 	status := ctx.Query("status")
 	name := ctx.Query("name")
+	architecture := ctx.Query("architecture")
 
 	deviceFilter := device.DeviceFilter{
-		Id:     id,
-		Status: status,
-		Name:   name,
+		Id:           id,
+		Status:       status,
+		Name:         name,
+		Architecture: architecture,
 	}
 
 	devices, err := h.service.ListDevices(ctx.Request.Context(), deviceFilter)
