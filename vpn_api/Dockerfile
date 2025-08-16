@@ -1,16 +1,9 @@
-FROM kylemanna/openvpn
+# Stage 1: Build the Go application
+FROM golang:1.24.6-alpine3.21 AS builder
 
-# Install Go
-RUN apk add --no-cache go git
-
-# Set Go environment
-ENV GOPATH=/go
-ENV PATH=$GOPATH/bin:/usr/local/go/bin:$PATH
-
-# Create app directory
 WORKDIR /app
 
-# Copy Go modules first (for better caching)
+# Copy go mod files
 COPY go.mod go.sum ./
 
 # Download dependencies
@@ -19,13 +12,22 @@ RUN go mod download
 # Copy source code
 COPY . .
 
-# Build the Go application
-RUN go build -o vpn_api .
+# Build the application
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o vpn-api .
+
+# Stage 2: Create the final image with OpenVPN
+FROM kylemanna/openvpn
+
+# Install any additional packages if needed
+RUN apk add --no-cache ca-certificates
+
+# Copy the built binary from the builder stage
+COPY --from=builder /app/vpn-api /usr/local/bin/vpn-api
 
 # Copy startup script
-COPY start_services.sh /usr/local/bin/start_services.sh
-RUN chmod +x /usr/local/bin/start_services.sh
+COPY start-services.sh /usr/local/bin/start-services.sh
+RUN chmod +x /usr/local/bin/start-services.sh /usr/local/bin/vpn-api
 
 EXPOSE 8080
 
-CMD ["/usr/local/bin/start_services.sh"]
+CMD ["/usr/local/bin/start-services.sh"]
