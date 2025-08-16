@@ -10,9 +10,7 @@ services:
       - ./backend/.env
     volumes:
       - ./openvpn-data/conf:/etc/openvpn
-    networks:
-      - mdm_network
-
+    
   nginx:
     image: nginx:latest
     container_name: nginx
@@ -45,13 +43,13 @@ services:
     restart: unless-stopped
     ports:
       - "1194:1194/udp"
+      - "9999:8080"
     volumes:
       - ./openvpn-data/conf:/etc/openvpn
+    env_file:
+      - ./vpn_api/.env
     cap_add:
       - NET_ADMIN
-    networks:
-      - mdm_network
 
-networks:
-  mdm_network:
-    driver: bridge
+
+

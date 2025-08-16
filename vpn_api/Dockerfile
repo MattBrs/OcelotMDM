@@ -10,19 +10,16 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o vpn-api .
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o vpn-api .
 
 FROM kylemanna/openvpn
 
-RUN apk add --no-cache ca-certificates
+RUN apk add --no-cache ca-certificates expect
 
 COPY --from=builder /app/vpn-api /usr/local/bin/vpn-api
 
 # Copy startup script
-COPY start_services.sh /usr/local/bin/start_services.sh
-RUN chmod +x /usr/local/bin/start_services.sh /usr/local/bin/vpn-api
+RUN chmod +x /usr/local/bin/vpn-api
 
 EXPOSE 8080
-
-CMD ["/usr/local/bin/start_services.sh"]
+CMD ["/usr/local/bin/vpn-api"]
