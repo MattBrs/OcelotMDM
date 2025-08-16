@@ -33,3 +33,14 @@ services:
       - ./mosquitto/config:/mosquitto/config
       - ./mosquitto/data:/mosquitto/data
       - ./mosquitto/log:/mosquitto/log
+
+  openvpn:
+    image: kylemanna/openvpn
+    container_name: openvpn
+    restart: always
+    ports:
+      - "1194:1194/udp"
+    volumes:
+      - ./openvpn-data/conf:/etc/openvpn
+    cap_add:
+      - NET_ADMIN
