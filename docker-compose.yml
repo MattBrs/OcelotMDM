@@ -10,6 +10,8 @@ services:
       - ./backend/.env
     volumes:
       - ./openvpn-data/conf:/etc/openvpn
+    networks:
+      - mdm_network
 
   nginx:
     image: nginx:latest
@@ -36,13 +38,20 @@ services:
       - ./mosquitto/data:/mosquitto/data
       - ./mosquitto/log:/mosquitto/log
 
-  openvpn:
-    image: kylemanna/openvpn
-    container_name: openvpn
-    restart: always
+  vpn_api:
+    build: ./vpn_api
+    image: my-vpn:latest
+    container_name: vpn_api 
+    restart: unless-stopped
     ports:
       - "1194:1194/udp"
     volumes:
       - ./openvpn-data/conf:/etc/openvpn
     cap_add:
       - NET_ADMIN
+    networks:
+      - mdm_network
+
+networks:
+  mdm_network:
+    driver: bridge
