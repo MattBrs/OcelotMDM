@@ -8,6 +8,8 @@ services:
       - "8080"
     env_file:
       - ./backend/.env
+    volumes:
+      - ./openvpn-data/conf:/etc/openvpn
 
   nginx:
     image: nginx:latest
