@@ -86,7 +86,7 @@ func initMongoConn() *storage.MongoConnection {
 
 func setGinRoutes(router *gin.Engine, handlers Handlers, authIntr *interceptor.Interceptor) {
 	router.POST("/devices", handlers.deviceHandler.AddNewDevice)
-	router.GET("/devices", handlers.deviceHandler.ListDevices)
+	router.GET("/devices", authIntr.CheckAuth, handlers.deviceHandler.ListDevices)
 	router.POST("/devices/updateAddress", authIntr.CheckAuth, handlers.deviceHandler.UpdateDeviceAddress)
 
 	router.POST("/token/generate", authIntr.CheckAuth, handlers.tokenHandler.RequestToken)
