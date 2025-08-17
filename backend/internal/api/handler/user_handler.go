@@ -85,6 +85,7 @@ func (h *UserHandler) Login(ctx *gin.Context) {
 	token, err := h.service.LoginUser(ctx, req.Username, req.Password)
 	if err != nil {
 		status := http.StatusBadRequest
+		fmt.Println(fmt.Printf("login error: %s  with req body: %s", err.Error(), req))
 		switch {
 		case errors.Is(err, user.ErrUserNotFound):
 			status = http.StatusUnauthorized
