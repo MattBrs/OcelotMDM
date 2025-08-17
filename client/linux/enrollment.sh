@@ -38,28 +38,43 @@ fi
 
 echo "Using $otp for enrollment of a device of type '$type'"
 
-res="$(curl -H 'Content-Type: application/json' \
+system_arch=$(uname -m)
+
+res=$(curl -H 'Content-Type: application/json' \
       --silent \
-      -w "\n%{http_code}\n" \
-      -d "{ \"otp\":\"$otp\",\"type\":\"$type\"}" \
-      -X POST \
-      http://localhost:8080/devices)"
+      -w "\n%{http_code}" \
+      -d "{ \"otp\":\"$otp\",\"type\":\"$type\",\"architecture\":\"$system_arch\"}" \
+      -X POST -L -k \
+      https://159.89.2.75/devices)
 
-# TODO: parse res by first reading the code and if it's 200
-# save the following data into a configuration file
-n=0
-while IFS= read -r line
-do
-    resArrat+=$line
-    n=$(($n + 1))
-    echo "line: $line"
-done < <(printf '%s\n' "$res")
 
-if [ $n -eq 2 ]; then
-    if [ ${arr[1]} -eq 200 ]; then
-        echo "success"
-    else
-        echo "error"
-    fi
+http_code=$(echo "$res" | tail -n1)
+body=$(echo "$res" | head -n -1)
+echo "HTTP status: $http_code"
+
+if [ "$http_code" -eq 201 ]; then
+    echo "Enrollment successful!"
+
+    device_name=$(echo "$body" | sed -n 's/.*"name": *"\([^"]*\)".*/\1/p')
+    echo "device name: $device_name"
+
+    ovpn_file=$(echo "$body" | sed -n 's/.*"ovpn_file": *"\([^"]*\)".*/\1/p') 
+    echo "$ovpn_file" | sed -e 's/\\u003c/</g' \
+      -e 's/\\u003e/>/g' \
+      -e 's#\\\/#/#g' \
+      -e 's/\\"/"/g' \
+      -e 's/\\r//g' \
+      -e 's/\\n/\n/g' \
+  > "${device_name}.ovpn"    
+
+    echo "VPN configuration saved to ${device_name}.ovpn"
+    echo "You can now connect using: openvpn ${device_name}.ovpn"
+
+else
+    echo "Enrollment failed with HTTP code: $http_code"
+    echo "Response: $body"
+    exit 1
 fi
-echo $n
+
+
+
