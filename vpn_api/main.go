@@ -14,14 +14,11 @@ type NewCertRequest struct {
 	DeviceName string `json:"device_name"`
 }
 
-func generateClientCert(deviceName string) (string, error) {
+func generateClientCert(deviceName string) ([]byte, error) {
 	pwd := os.Getenv("CA_PWD")
 	if pwd == "" {
-		return "", errors.New("password was not provided")
+		return nil, errors.New("password was not provided")
 	}
-
-	fmt.Println("pwd:", pwd)
-	fmt.Println("deviceName:", deviceName)
 
 	bashScript := fmt.Sprintf(`
 cd /etc/openvpn
@@ -34,49 +31,56 @@ printf "%s\nyes\n" | easyrsa --batch build-client-full %s nopass
 
 	certCmd := exec.Command("bash", "-c", bashScript)
 
-	output, err := certCmd.CombinedOutput()
+	_, err := certCmd.CombinedOutput()
 	if err != nil {
-		fmt.Println("gen conf error: ", string(output))
-		return "", err
+		return nil, errors.New("generate error")
 	}
 
 	ovpnCmd := exec.Command("ovpn_getclient", deviceName)
 	ovpnCmd.Dir = "/etc/openvpn"
 
-	output, err = ovpnCmd.Output()
+	output, err := ovpnCmd.Output()
 	if err != nil {
-		fmt.Println("conf pull error: ", string(output))
-		return "", err
+		return nil, errors.New("retrieval error")
 	}
 
-	return string(output), nil
+	return output, nil
 }
 
 func CreateNewCert(ctx *gin.Context) {
 	var req NewCertRequest
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
-		fmt.Println("err: ", err.Error())
-		ctx.JSON(http.StatusInternalServerError, gin.H{"code": "500"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "500"})
 		return
 	}
 
 	if req.DeviceName == "" {
-		fmt.Println("deviceName is void")
-		ctx.JSON(http.StatusInternalServerError, gin.H{"code": "500"})
+		fmt.Println("deviceName is not valid")
+		ctx.JSON(
+			http.StatusInternalServerError,
+			gin.H{"error": "device name is not valid"},
+		)
 		return
 	}
 
 	cert, err := generateClientCert(req.DeviceName)
 	if err != nil {
-		fmt.Println("err generate cert: ", err.Error())
-		ctx.JSON(http.StatusInternalServerError, gin.H{"code": "500"})
+		// printed error is either invalid pwd, gen error or retrieval err
+		errStr := fmt.Sprintf(
+			"internal server error on certificate generation: %s",
+			err.Error(),
+		)
+		ctx.JSON(
+			http.StatusInternalServerError,
+			gin.H{"error": errStr},
+		)
 		return
 	}
 
 	ctx.JSON(
 		http.StatusOK,
-		gin.H{"code": "200", "ovpn_file": cert},
+		gin.H{"ovpn_file": cert},
 	)
 }
 

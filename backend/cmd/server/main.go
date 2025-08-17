@@ -12,6 +12,7 @@ import (
 	"github.com/MattBrs/OcelotMDM/internal/storage"
 	"github.com/MattBrs/OcelotMDM/internal/token"
 	"github.com/MattBrs/OcelotMDM/internal/user"
+	"github.com/MattBrs/OcelotMDM/internal/vpn"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -121,9 +122,10 @@ func main() {
 	tokenRepo := token.NewMongoRepository(tokenCol)
 	deviceRepo := device.NewMongoRepository(deviceCol)
 
+	vpnService := vpn.NewService("http://vpn_api:8080")
 	userService := user.NewService(userRepo)
 	tokenService := token.NewService(tokenRepo)
-	deviceService := device.NewService(deviceRepo, tokenService)
+	deviceService := device.NewService(deviceRepo, tokenService, vpnService)
 
 	handlers := Handlers{
 		userHandler:   api.NewUserHandler(userService),

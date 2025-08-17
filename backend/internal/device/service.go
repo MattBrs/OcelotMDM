@@ -4,11 +4,13 @@ import (
 	"context"
 
 	"github.com/MattBrs/OcelotMDM/internal/token"
+	"github.com/MattBrs/OcelotMDM/internal/vpn"
 )
 
 type Service struct {
 	repo         Repository
 	tokenService *token.Service
+	vpnService   *vpn.Service
 }
 
 type DeviceFilter struct {
@@ -18,29 +20,43 @@ type DeviceFilter struct {
 	Architecture string
 }
 
-func NewService(repo Repository, tokenService *token.Service) *Service {
-	return &Service{repo: repo, tokenService: tokenService}
+func NewService(repo Repository, tokenService *token.Service, vpnService *vpn.Service) *Service {
+	return &Service{
+		repo:         repo,
+		tokenService: tokenService,
+		vpnService:   vpnService,
+	}
 }
 
-func (s *Service) RegisterNewDevice(ctx context.Context, dev *Device, otp string) error {
+func (s *Service) RegisterNewDevice(ctx context.Context, dev *Device, otp string) ([]byte, error) {
 	if dev.Name == "" {
-		return ErrEmptyName
+		return nil, ErrEmptyName
 	}
 
 	if dev.Type == "" {
-		return ErrEmptyType
+		return nil, ErrEmptyType
 	}
 
 	otpValid, err := s.tokenService.Verify(ctx, otp)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if !otpValid {
-		return ErrInvalidOtp
+		return nil, ErrInvalidOtp
 	}
 
-	return s.repo.Create(ctx, dev)
+	err = s.repo.Create(ctx, dev)
+	if err != nil {
+		return nil, err
+	}
+
+	newCert, err := s.vpnService.RequestCertCreation(dev.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return newCert, nil
 }
 
 func (s *Service) MarkOnline(ctx context.Context, id string) error {

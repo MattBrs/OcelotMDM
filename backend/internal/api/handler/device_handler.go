@@ -25,14 +25,25 @@ func NewDeviceHandler(service *device.Service) *DeviceHandler {
 func (h *DeviceHandler) AddNewDevice(ctx *gin.Context) {
 	var req dto.DeviceCreationRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
+		ctx.JSON(
+			http.StatusBadRequest,
+			dto.DeviceCreationErrResponse{
+				Error: "invalid JSON",
+			},
+		)
+
 		return
 	}
 
 	if req.Otp == "" || req.Type == "" || req.Architecture == "" {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
-		return
+		ctx.JSON(
+			http.StatusBadRequest,
+			dto.DeviceCreationErrResponse{
+				Error: "invalid JSON",
+			},
+		)
 
+		return
 	}
 
 	name := h.generator.Generate()
@@ -46,33 +57,33 @@ func (h *DeviceHandler) AddNewDevice(ctx *gin.Context) {
 		Architecture: req.Architecture,
 	}
 
-	err := h.service.RegisterNewDevice(ctx.Request.Context(), &dev, req.Otp)
+	newCert, err := h.service.RegisterNewDevice(ctx.Request.Context(), &dev, req.Otp)
 	if err != nil {
+		var errRes dto.DeviceCreationErrResponse
 		switch {
 		case errors.Is(err, device.ErrInvalidOtp):
-			ctx.JSON(
-				http.StatusInternalServerError,
-				gin.H{"error": "the otp is no longer valid"},
-			)
+			errRes.Error = "the otp is no longer valid"
 		case errors.Is(err, token.ErrOtpNotFound):
-			ctx.JSON(
-				http.StatusInternalServerError,
-				gin.H{"error": "the otp was not found"},
-			)
+			errRes.Error = "the otp was not found"
 		default:
-			ctx.JSON(
-				http.StatusInternalServerError,
-				gin.H{"error": "failed to register the device"},
-			)
+			errRes.Error = "failed to register the device"
 		}
+
+		ctx.JSON(
+			http.StatusInternalServerError,
+			errRes,
+		)
 
 		return
 	}
 
-	res := dto.DeviceCreationResponse{
-		Name: name,
-	}
-	ctx.JSON(http.StatusCreated, res)
+	ctx.JSON(
+		http.StatusCreated,
+		dto.DeviceCreationResponse{
+			Name:     name,
+			OvpnFile: string(newCert),
+		},
+	)
 }
 
 func (h *DeviceHandler) ListDevices(ctx *gin.Context) {
@@ -105,34 +116,32 @@ func (h *DeviceHandler) UpdateDeviceAddress(ctx *gin.Context) {
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(
 			http.StatusBadRequest,
-			dto.UpdateAddressResponse{Error: "Could not parse JSON"},
+			dto.UpdateAddressErrResponse{Error: "Could not parse JSON"},
 		)
 	}
 
 	if err := h.service.UpdateAddress(ctx, req.Name, req.IPAddress); err != nil {
+		var errRes dto.UpdateAddressErrResponse
+		httpStatus := http.StatusInternalServerError
 		switch {
 		case errors.Is(err, device.ErrDeviceNotFound):
-			ctx.JSON(
-				http.StatusInternalServerError,
-				dto.DeviceCreationResponse{Error: "device was not found"},
-			)
+			httpStatus = http.StatusNotFound
+			errRes.Error = "device was not found"
 		case errors.Is(err, device.ErrDeviceNotUpdated):
-			ctx.JSON(
-				http.StatusInternalServerError,
-				dto.DeviceCreationResponse{Error: "device addr was not updated"},
-			)
+			errRes.Error = "device addr was not updated"
 		default:
-			ctx.JSON(
-				http.StatusInternalServerError,
-				dto.DeviceCreationResponse{Error: "generic error"},
-			)
+			errRes.Error = "generic error"
 		}
 
+		ctx.JSON(httpStatus, errRes)
 		return
 	}
 
 	ctx.JSON(
 		http.StatusOK,
-		dto.UpdateAddressResponse{},
+		dto.UpdateAddressResponse{
+			DeviceName: req.Name,
+			IpAddress:  req.IPAddress,
+		},
 	)
 }
