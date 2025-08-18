@@ -17,7 +17,7 @@ FROM kylemanna/openvpn
 RUN apk add --no-cache ca-certificates expect
 
 COPY --from=builder /app/vpn-api /usr/local/bin/vpn-api
-COPY vpn_api/entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY ./entrypoint.sh /usr/local/bin/entrypoint.sh
 
 # Copy startup script
 RUN chmod +x /usr/local/bin/vpn-api
