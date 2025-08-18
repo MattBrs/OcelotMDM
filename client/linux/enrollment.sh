@@ -67,6 +67,10 @@ if [ "$http_code" -eq 201 ]; then
       -e 's/\\n/\n/g' \
   > "${device_name}.ovpn"    
 
+
+    ovpn_path="${device_name}.ovpn"
+    sed -i '/^[[:space:]]*redirect-gateway/ d' "$ovpn_path"
+
     echo "VPN configuration saved to ${device_name}.ovpn"
     echo "You can now connect using: openvpn ${device_name}.ovpn"
 
