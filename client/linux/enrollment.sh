@@ -73,12 +73,19 @@ if [ "$http_code" -eq 201 ]; then
 
     echo "VPN configuration saved to ${device_name}.ovpn"
     echo "You can now connect using: openvpn ${device_name}.ovpn"
-
 else
     echo "Enrollment failed with HTTP code: $http_code"
     echo "Response: $body"
     exit 1
 fi
+
+
+current_path=$(pwd)
+
+echo "OcelotMDM files have been installed"
+echo "To finish the installation add to your initing system these executables: "
+echo "- openvpn ${current_path}/${device_name}.ovpn"
+echo "- ocelot_core"
 
 
 
