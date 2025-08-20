@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/MattBrs/OcelotMDM/internal/user"
+	"github.com/MattBrs/OcelotMDM/internal/domain/user"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )

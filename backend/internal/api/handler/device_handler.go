@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/MattBrs/OcelotMDM/internal/api/dto"
-	"github.com/MattBrs/OcelotMDM/internal/device"
-	"github.com/MattBrs/OcelotMDM/internal/token"
+	"github.com/MattBrs/OcelotMDM/internal/domain/device"
+	"github.com/MattBrs/OcelotMDM/internal/domain/token"
 	"github.com/gin-gonic/gin"
 	"github.com/goombaio/namegenerator"
 )

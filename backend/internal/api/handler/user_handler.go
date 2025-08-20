@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/MattBrs/OcelotMDM/internal/api/dto"
-	"github.com/MattBrs/OcelotMDM/internal/user"
+	"github.com/MattBrs/OcelotMDM/internal/domain/user"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )

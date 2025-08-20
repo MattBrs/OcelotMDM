@@ -3,8 +3,8 @@ package device
 import (
 	"context"
 
-	"github.com/MattBrs/OcelotMDM/internal/token"
-	"github.com/MattBrs/OcelotMDM/internal/vpn"
+	"github.com/MattBrs/OcelotMDM/internal/domain/token"
+	"github.com/MattBrs/OcelotMDM/internal/domain/vpn"
 )
 
 type Service struct {
