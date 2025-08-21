@@ -6,13 +6,16 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type CommandStatus string
+type CommandStatus struct {
+	Id     int    `bson:"status_id"`
+	Status string `bson:"status_value"`
+}
 
-const (
-	WAITING   CommandStatus = "waiting"
-	QUEUED    CommandStatus = "queued"
-	COMPLETED CommandStatus = "completed"
-	ERRORED   CommandStatus = "errored"
+var (
+	WAITING   = CommandStatus{Id: 1, Status: "waiting"}
+	QUEUED    = CommandStatus{Id: 1, Status: "queued"}
+	COMPLETED = CommandStatus{Id: 1, Status: "completed"}
+	ERRORED   = CommandStatus{Id: 1, Status: "errored"}
 )
 
 type Command struct {

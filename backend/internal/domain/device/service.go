@@ -92,3 +92,16 @@ func (s *Service) ListDevices(ctx context.Context, filter DeviceFilter) ([]*Devi
 
 	return devices, nil
 }
+
+func (s *Service) GetByName(ctx context.Context, deviceName string) (*Device, error) {
+	if deviceName == "" {
+		return nil, ErrEmptyName
+	}
+
+	dev, err := s.repo.GetByName(ctx, deviceName)
+	if err != nil {
+		return nil, err
+	}
+
+	return dev, nil
+}
