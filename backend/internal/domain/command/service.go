@@ -13,12 +13,12 @@ type Service struct {
 }
 
 type CommandFilter struct {
-	Id          string
-	DeviceName  string
-	CommandType string
-	Status      *CommandStatus
-	Priority    *uint
-	RequestedBy string
+	Id                string
+	DeviceName        string
+	CommandActionName string
+	Status            *CommandStatus
+	Priority          *uint
+	RequestedBy       string
 }
 
 func NewService(repo Repository, deviceService *device.Service) *Service {

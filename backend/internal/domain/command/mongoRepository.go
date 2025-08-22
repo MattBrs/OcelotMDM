@@ -100,8 +100,8 @@ func (r *MongoCommandRepository) List(ctx context.Context, filter CommandFilter)
 		mongoFilter["device_name"] = filter.DeviceName
 	}
 
-	if filter.CommandType != "" {
-		mongoFilter["command_type_id"] = filter.CommandType
+	if filter.CommandActionName != "" {
+		mongoFilter["command_action_name"] = filter.CommandActionName
 	}
 
 	if filter.Status != nil {
