@@ -1,4 +1,4 @@
-package dto
+package device_dto
 
 type DeviceCreationRequest struct {
 	Otp          string `json:"otp"`

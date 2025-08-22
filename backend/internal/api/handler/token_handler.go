@@ -3,7 +3,7 @@ package api
 import (
 	"net/http"
 
-	"github.com/MattBrs/OcelotMDM/internal/api/dto"
+	"github.com/MattBrs/OcelotMDM/internal/api/dto/token_dto"
 	"github.com/MattBrs/OcelotMDM/internal/domain/token"
 	"github.com/gin-gonic/gin"
 )
@@ -28,7 +28,7 @@ func (h *TokenHandler) RequestToken(ctx *gin.Context) {
 
 	ctx.JSON(
 		http.StatusOK,
-		dto.NewTokenResponse{
+		token_dto.NewTokenResponse{
 			Token:     token.Token,
 			ExpiresAt: token.ExpiresAt,
 		},

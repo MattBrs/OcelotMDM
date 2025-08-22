@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/MattBrs/OcelotMDM/internal/api/dto"
+	"github.com/MattBrs/OcelotMDM/internal/api/dto/user_dto"
 	"github.com/MattBrs/OcelotMDM/internal/domain/user"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -21,11 +21,11 @@ func NewUserHandler(service *user.Service) *UserHandler {
 }
 
 func (h *UserHandler) CreateUser(ctx *gin.Context) {
-	var req dto.CreateUserRequest
+	var req user_dto.CreateUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(
 			http.StatusBadRequest,
-			dto.CreateUserResponse{Error: "Invalid JSON"},
+			user_dto.CreateUserResponse{Error: "Invalid JSON"},
 		)
 		return
 	}
@@ -40,7 +40,7 @@ func (h *UserHandler) CreateUser(ctx *gin.Context) {
 		Admin:     false,
 	}
 
-	res := dto.CreateUserResponse{}
+	res := user_dto.CreateUserResponse{}
 	err := h.service.CreateNewUser(ctx.Request.Context(), &newUser)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -69,19 +69,19 @@ func (h *UserHandler) CreateUser(ctx *gin.Context) {
 }
 
 func (h *UserHandler) Login(ctx *gin.Context) {
-	var req dto.LoginUserRequest
+	var req user_dto.LoginUserRequest
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
 		ctx.JSON(
 			http.StatusBadRequest,
-			dto.LoginUserResponse{
+			user_dto.LoginUserResponse{
 				Error: "could not parse JSON",
 			},
 		)
 		return
 	}
 
-	var res dto.LoginUserResponse
+	var res user_dto.LoginUserResponse
 	token, err := h.service.LoginUser(ctx, req.Username, req.Password)
 	if err != nil {
 		status := http.StatusBadRequest
@@ -112,7 +112,7 @@ func (h *UserHandler) EnableUser(ctx *gin.Context) {
 	if !ok {
 		ctx.JSON(
 			http.StatusUnauthorized,
-			dto.UpdateUserEnableStatusResponseErr{
+			user_dto.UpdateUserEnableStatusResponseErr{
 				Error: "you must be logged in to perform this acton",
 			},
 		)
@@ -123,19 +123,19 @@ func (h *UserHandler) EnableUser(ctx *gin.Context) {
 	if !loggedUser.Admin {
 		ctx.JSON(
 			http.StatusUnauthorized,
-			dto.UpdateUserEnableStatusResponseErr{
+			user_dto.UpdateUserEnableStatusResponseErr{
 				Error: "user is not authorized",
 			},
 		)
 		return
 	}
 
-	var req dto.UpdateUserEnableStatusRequest
+	var req user_dto.UpdateUserEnableStatusRequest
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
 		ctx.JSON(
 			http.StatusBadRequest,
-			dto.UpdateUserEnableStatusResponseErr{
+			user_dto.UpdateUserEnableStatusResponseErr{
 				Error: "could not parse json",
 			},
 		)
@@ -145,7 +145,7 @@ func (h *UserHandler) EnableUser(ctx *gin.Context) {
 	if req.Username == loggedUser.Username {
 		ctx.JSON(
 			http.StatusBadRequest,
-			dto.UpdateUserEnableStatusResponseErr{
+			user_dto.UpdateUserEnableStatusResponseErr{
 				Error: "user is forbidden to remove permissions to self",
 			},
 		)
@@ -154,7 +154,7 @@ func (h *UserHandler) EnableUser(ctx *gin.Context) {
 
 	err = h.service.UpdateUserEnabledStatus(ctx, req.Username, req.Enabled)
 	if err != nil {
-		var res dto.UpdateUserEnableStatusResponseErr
+		var res user_dto.UpdateUserEnableStatusResponseErr
 		switch {
 		case errors.Is(err, user.ErrUserNotFound):
 			res.Error = "user was not found"

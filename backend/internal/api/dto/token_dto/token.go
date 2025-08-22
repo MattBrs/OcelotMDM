@@ -1,4 +1,4 @@
-package dto
+package token_dto
 
 import "time"
 

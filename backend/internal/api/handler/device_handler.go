@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/MattBrs/OcelotMDM/internal/api/dto"
+	"github.com/MattBrs/OcelotMDM/internal/api/dto/device_dto"
 	"github.com/MattBrs/OcelotMDM/internal/domain/device"
 	"github.com/MattBrs/OcelotMDM/internal/domain/token"
 	"github.com/gin-gonic/gin"
@@ -23,11 +23,11 @@ func NewDeviceHandler(service *device.Service) *DeviceHandler {
 }
 
 func (h *DeviceHandler) AddNewDevice(ctx *gin.Context) {
-	var req dto.DeviceCreationRequest
+	var req device_dto.DeviceCreationRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(
 			http.StatusBadRequest,
-			dto.DeviceCreationErrResponse{
+			device_dto.DeviceCreationErrResponse{
 				Error: "invalid JSON",
 			},
 		)
@@ -38,7 +38,7 @@ func (h *DeviceHandler) AddNewDevice(ctx *gin.Context) {
 	if req.Otp == "" || req.Type == "" || req.Architecture == "" {
 		ctx.JSON(
 			http.StatusBadRequest,
-			dto.DeviceCreationErrResponse{
+			device_dto.DeviceCreationErrResponse{
 				Error: "invalid JSON",
 			},
 		)
@@ -59,7 +59,7 @@ func (h *DeviceHandler) AddNewDevice(ctx *gin.Context) {
 
 	newCert, err := h.service.RegisterNewDevice(ctx.Request.Context(), &dev, req.Otp)
 	if err != nil {
-		var errRes dto.DeviceCreationErrResponse
+		var errRes device_dto.DeviceCreationErrResponse
 		switch {
 		case errors.Is(err, device.ErrInvalidOtp):
 			errRes.Error = "the otp is no longer valid"
@@ -79,7 +79,7 @@ func (h *DeviceHandler) AddNewDevice(ctx *gin.Context) {
 
 	ctx.JSON(
 		http.StatusCreated,
-		dto.DeviceCreationResponse{
+		device_dto.DeviceCreationResponse{
 			Name:     name,
 			OvpnFile: string(newCert),
 		},
@@ -112,16 +112,16 @@ func (h *DeviceHandler) ListDevices(ctx *gin.Context) {
 }
 
 func (h *DeviceHandler) UpdateDeviceAddress(ctx *gin.Context) {
-	var req dto.UpdateAddressRequest
+	var req device_dto.UpdateAddressRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(
 			http.StatusBadRequest,
-			dto.UpdateAddressErrResponse{Error: "Could not parse JSON"},
+			device_dto.UpdateAddressErrResponse{Error: "Could not parse JSON"},
 		)
 	}
 
 	if err := h.service.UpdateAddress(ctx, req.Name, req.IPAddress); err != nil {
-		var errRes dto.UpdateAddressErrResponse
+		var errRes device_dto.UpdateAddressErrResponse
 		httpStatus := http.StatusInternalServerError
 		switch {
 		case errors.Is(err, device.ErrDeviceNotFound):
@@ -139,7 +139,7 @@ func (h *DeviceHandler) UpdateDeviceAddress(ctx *gin.Context) {
 
 	ctx.JSON(
 		http.StatusOK,
-		dto.UpdateAddressResponse{
+		device_dto.UpdateAddressResponse{
 			DeviceName: req.Name,
 			IpAddress:  req.IPAddress,
 		},
