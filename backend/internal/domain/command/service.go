@@ -16,8 +16,8 @@ type CommandFilter struct {
 	Id          string
 	DeviceName  string
 	CommandType string
-	Status      CommandStatus
-	Priority    uint
+	Status      *CommandStatus
+	Priority    *uint
 	RequestedBy string
 }
 
@@ -28,17 +28,18 @@ func NewService(repo Repository, deviceService *device.Service) *Service {
 	}
 }
 
-func (s *Service) EnqueueCommand(ctx context.Context, cmd *Command) error {
+func (s *Service) EnqueueCommand(ctx context.Context, cmd *Command) (*string, error) {
 	_, err := s.deviceServie.GetByName(ctx, cmd.DeviceName)
 	if err != nil {
-		return ErrDeviceNotFound
+		return nil, ErrDeviceNotFound
 	}
 
-	if err := s.repo.Create(ctx, cmd); err != nil {
-		return err
+	newCmdId, err := s.repo.Create(ctx, cmd)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	return newCmdId, err
 }
 
 func (s *Service) ListCommands(ctx context.Context, filter CommandFilter) ([]*Command, error) {

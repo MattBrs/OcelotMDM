@@ -13,8 +13,6 @@ type MongoCommandRepository struct {
 	collection *mongo.Collection
 }
 
-// TODO: finish implementation of dao
-
 func NewMongoRepository(col *mongo.Collection) MongoCommandRepository {
 	return MongoCommandRepository{col}
 }
@@ -93,5 +91,45 @@ func (r *MongoCommandRepository) Delete(ctx context.Context, id primitive.Object
 }
 
 func (r *MongoCommandRepository) List(ctx context.Context, filter CommandFilter) ([]*Command, error) {
-	return nil, nil
+	mongoFilter := bson.M{}
+	if filter.Id != "" {
+		mongoFilter["_id"] = filter.Id
+	}
+
+	if filter.DeviceName != "" {
+		mongoFilter["device_name"] = filter.DeviceName
+	}
+
+	if filter.CommandType != "" {
+		mongoFilter["command_type_id"] = filter.CommandType
+	}
+
+	if filter.Status != nil {
+		mongoFilter["status"] = filter.Status
+	}
+
+	if filter.Priority != nil {
+		mongoFilter["priority"] = filter.Priority
+	}
+
+	if filter.RequestedBy != "" {
+		mongoFilter["requested_by"] = filter.RequestedBy
+	}
+
+	cursor, err := r.collection.Find(ctx, mongoFilter)
+	if err != nil {
+		return nil, err
+	}
+
+	var commands []*Command
+	for cursor.Next(ctx) {
+		var c Command
+		if err = cursor.Decode(&c); err != nil {
+			return nil, err
+		}
+
+		commands = append(commands, &c)
+	}
+
+	return commands, nil
 }
