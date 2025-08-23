@@ -3,29 +3,29 @@ package command_action_dto
 import "github.com/MattBrs/OcelotMDM/internal/domain/command_action"
 
 type AddNewCommandActionRequest struct {
-	Name            string `bson:"name" binding:"required"`
-	Description     string `bson:"description" binding:"required"`
-	RequiredOnline  bool   `bson:"required_online" binding:"required"`
-	DefaultPriority uint   `bson:"default_priority" binding:"required"`
+	Name            string `json:"name" binding:"required"`
+	Description     string `json:"description" binding:"required"`
+	RequiredOnline  bool   `json:"required_online" binding:"required"`
+	DefaultPriority uint   `json:"default_priority" binding:"required"`
 }
 
 type AddNewCommandActionResponse struct {
-	ID   string `bson:"_id,omitempty"`
-	Name string `bson:"name"`
+	ID   string `json:"_id,omitempty"`
+	Name string `json:"name"`
 }
 
 type DeleteCommandActionRequest struct {
-	Name string `bson:"name" binding:"required"`
+	Name string `json:"name" binding:"required"`
 }
 
 type DeleteCommandActionResponse struct {
-	Status string `bson:"status"`
+	Status string `json:"status"`
 }
 
 type ListCommandActionResponse struct {
-	CommandActions []*command_action.CommandAction `bson:"command_actions"`
+	CommandActions []*command_action.CommandAction `json:"command_actions"`
 }
 
 type ResponseErr struct {
-	Error string `bson:"error"`
+	Error string `json:"error"`
 }
