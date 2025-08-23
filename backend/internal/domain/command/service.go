@@ -43,8 +43,7 @@ func (s *Service) EnqueueCommand(ctx context.Context, cmd *Command) (*string, er
 
 	_, err = s.commandActionService.GetByName(ctx, cmd.CommandActionName)
 	if err != nil {
-		// command action is not present
-		return nil, err
+		return nil, command_action.ErrCommandActionNotFound
 	}
 
 	newCmdId, err := s.repo.Create(ctx, cmd)

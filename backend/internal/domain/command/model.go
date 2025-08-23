@@ -39,9 +39,9 @@ type Command struct {
 	DeviceName        string             `bson:"device_name"`
 	Payload           string             `bson:"payload,omitempty"`
 	Status            CommandStatus      `bson:"status"`
-	CreatedAt         time.Time          `bson:"created_at"`
-	QueuedAt          time.Time          `bson:"queued_at"`
-	CompletedAt       time.Time          `bson:"completed_at"`
+	CreatedAt         *time.Time         `bson:"created_at"`
+	QueuedAt          *time.Time         `bson:"queued_at"`
+	CompletedAt       *time.Time         `bson:"completed_at"`
 	Priority          uint               `bson:"priority"`
 	RequestedBy       string             `bson:"requested_by"`
 	ErrorDescription  string             `bson:"error_desc,omitempty"`

@@ -4,10 +4,12 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/MattBrs/OcelotMDM/internal/api/dto/command_dto"
 	"github.com/MattBrs/OcelotMDM/internal/domain/command"
 	"github.com/MattBrs/OcelotMDM/internal/domain/command_action"
+	"github.com/MattBrs/OcelotMDM/internal/domain/user"
 	"github.com/gin-gonic/gin"
 )
 
@@ -45,7 +47,29 @@ func (handler *CommandHandler) AddNewCommand(ctx *gin.Context) {
 		return
 	}
 
-	cmd := command.Command{}
+	creationTime := time.Now()
+	currentUser, exists := ctx.Get("currentUser")
+	if !exists {
+		ctx.JSON(
+			http.StatusUnauthorized,
+			command_dto.ResponseErr{
+				Error: "user not found",
+			},
+		)
+	}
+
+	cmd := command.Command{
+		CommandActionName: req.CommandActionName,
+		DeviceName:        req.DeviceName,
+		Payload:           req.Payload,
+		Status:            command.QUEUED,
+		CreatedAt:         &creationTime,
+		QueuedAt:          &creationTime,
+		CompletedAt:       nil,
+		Priority:          req.Priority,
+		RequestedBy:       currentUser.(*user.User).Username,
+		ErrorDescription:  "",
+	}
 	id, err := handler.service.EnqueueCommand(ctx, &cmd)
 	if err != nil {
 		res := command_dto.ResponseErr{
@@ -84,17 +108,20 @@ func (handler *CommandHandler) ListCommands(ctx *gin.Context) {
 	requestedBy := ctx.Query("requestedBy")
 
 	var priorityInt *uint
-	val, err := strconv.Atoi(priority)
+	if priority != "" {
+		val, err := strconv.Atoi(priority)
 
-	if err != nil || val < 0 || val >= 0xFFFF {
-		ctx.JSON(http.StatusBadRequest, command_dto.ResponseErr{
-			Error: "priority is not valid",
-		})
-		return
+		if err != nil || val < 0 || val >= 0xFFFF {
+			ctx.JSON(http.StatusBadRequest, command_dto.ResponseErr{
+				Error: "priority is not valid",
+			})
+			return
+		}
+
+		casted := uint(val)
+		priorityInt = &casted
+
 	}
-
-	casted := uint(val)
-	priorityInt = &casted
 
 	filter := command.CommandFilter{
 		Id:                id,

@@ -2,7 +2,6 @@ package api
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/MattBrs/OcelotMDM/internal/api/dto/command_action_dto"
@@ -25,7 +24,6 @@ func NewCommandActionHandler(
 func (handler *CommandActionHandler) AddNewCommandAction(ctx *gin.Context) {
 	var req command_action_dto.AddNewCommandActionRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		fmt.Println("create command action error: ", err.Error())
 		ctx.JSON(
 			http.StatusBadRequest,
 			command_action_dto.ResponseErr{

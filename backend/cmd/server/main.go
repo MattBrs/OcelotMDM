@@ -125,11 +125,6 @@ func setGinRoutes(router *gin.Engine, handlers Handlers, authIntr *interceptor.I
 		authIntr.CheckAuth,
 		handlers.commandHandler.ListCommands,
 	)
-	router.POST(
-		"/command/delete",
-		authIntr.CheckAuth,
-		handlers.commandHandler.DeleteCommand,
-	)
 
 	router.POST(
 		"/command_actions/new",
