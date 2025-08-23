@@ -125,7 +125,7 @@ func (r *MongoCommandRepository) List(ctx context.Context, filter CommandFilter)
 	for cursor.Next(ctx) {
 		var c Command
 		if err = cursor.Decode(&c); err != nil {
-			return nil, err
+			return nil, ErrParsingResult
 		}
 
 		commands = append(commands, &c)

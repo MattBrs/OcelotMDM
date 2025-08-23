@@ -1,0 +1,139 @@
+package api
+
+import (
+	"errors"
+	"net/http"
+	"strconv"
+
+	"github.com/MattBrs/OcelotMDM/internal/api/dto/command_dto"
+	"github.com/MattBrs/OcelotMDM/internal/domain/command"
+	"github.com/MattBrs/OcelotMDM/internal/domain/command_action"
+	"github.com/gin-gonic/gin"
+)
+
+type CommandHandler struct {
+	service *command.Service
+}
+
+func NewCommandHandler(service *command.Service) *CommandHandler {
+	return &CommandHandler{
+		service: service,
+	}
+}
+
+func (handler *CommandHandler) AddNewCommand(ctx *gin.Context) {
+	var req command_dto.AddNewCommadRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(
+			http.StatusBadRequest,
+			command_dto.ResponseErr{
+				Error: "could not parse json",
+			},
+		)
+
+		return
+	}
+
+	if req.CommandActionName == "" || req.DeviceName == "" {
+		ctx.JSON(
+			http.StatusBadRequest,
+			command_dto.ResponseErr{
+				Error: "could not parse json",
+			},
+		)
+
+		return
+	}
+
+	cmd := command.Command{}
+	id, err := handler.service.EnqueueCommand(ctx, &cmd)
+	if err != nil {
+		res := command_dto.ResponseErr{
+			Error: "generic error",
+		}
+		httpStatus := http.StatusInternalServerError
+
+		switch {
+		case errors.Is(err, command.ErrDeviceNotFound):
+			res.Error = err.Error()
+			httpStatus = http.StatusBadRequest
+		case errors.Is(err, command_action.ErrCommandActionNotFound):
+			res.Error = err.Error()
+			httpStatus = http.StatusBadRequest
+		}
+
+		ctx.JSON(httpStatus, res)
+		return
+	}
+
+	ctx.JSON(
+		http.StatusCreated,
+		command_dto.AddNewCommadResponse{
+			ID:                *id,
+			CommandActionName: req.CommandActionName,
+			Status:            command.QUEUED,
+		},
+	)
+}
+func (handler *CommandHandler) ListCommands(ctx *gin.Context) {
+	id := ctx.Query("id")
+	deviceName := ctx.Query("deviceName")
+	status := ctx.Query("status")
+	commandActionName := ctx.Query("commandActioName")
+	priority := ctx.Query("priority")
+	requestedBy := ctx.Query("requestedBy")
+
+	var priorityInt *uint
+	val, err := strconv.Atoi(priority)
+
+	if err != nil || val < 0 || val >= 0xFFFF {
+		ctx.JSON(http.StatusBadRequest, command_dto.ResponseErr{
+			Error: "priority is not valid",
+		})
+		return
+	}
+
+	casted := uint(val)
+	priorityInt = &casted
+
+	filter := command.CommandFilter{
+		Id:                id,
+		DeviceName:        deviceName,
+		Status:            command.StatusFromString(status),
+		CommandActionName: commandActionName,
+		Priority:          priorityInt,
+		RequestedBy:       requestedBy,
+	}
+
+	commands, err := handler.service.ListCommands(ctx, filter)
+	if err != nil {
+		resErr := command_dto.ResponseErr{
+			Error: "generic error",
+		}
+		httpStatus := http.StatusInternalServerError
+
+		switch {
+		case errors.Is(err, command.ErrParsingResult):
+			resErr.Error = err.Error()
+			httpStatus = http.StatusInternalServerError
+		}
+
+		ctx.JSON(httpStatus, resErr)
+		return
+	}
+
+	ctx.JSON(
+		http.StatusOK,
+		command_dto.ListCommandsResponse{
+			Commands: commands,
+		},
+	)
+}
+
+func (handler *CommandHandler) UpdateCommand(ctx *gin.Context) {
+
+}
+
+func (handler *CommandHandler) DeleteCommand(ctx *gin.Context) {
+
+}

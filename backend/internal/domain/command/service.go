@@ -3,13 +3,15 @@ package command
 import (
 	"context"
 
+	"github.com/MattBrs/OcelotMDM/internal/domain/command_action"
 	"github.com/MattBrs/OcelotMDM/internal/domain/device"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Service struct {
-	repo         Repository
-	deviceServie *device.Service
+	repo                 Repository
+	deviceServie         *device.Service
+	commandActionService *command_action.Service
 }
 
 type CommandFilter struct {
@@ -32,6 +34,12 @@ func (s *Service) EnqueueCommand(ctx context.Context, cmd *Command) (*string, er
 	_, err := s.deviceServie.GetByName(ctx, cmd.DeviceName)
 	if err != nil {
 		return nil, ErrDeviceNotFound
+	}
+
+	_, err = s.commandActionService.GetByName(ctx, cmd.CommandActionName)
+	if err != nil {
+		// command action is not present
+		return nil, err
 	}
 
 	newCmdId, err := s.repo.Create(ctx, cmd)

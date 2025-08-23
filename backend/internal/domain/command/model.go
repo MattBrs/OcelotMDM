@@ -11,11 +11,26 @@ type CommandStatus struct {
 	Status string `bson:"status_value"`
 }
 
+func StatusFromString(val string) *CommandStatus {
+	switch val {
+	case WAITING.Status:
+		return &COMPLETED
+	case QUEUED.Status:
+		return &QUEUED
+	case COMPLETED.Status:
+		return &COMPLETED
+	case ERRORED.Status:
+		return &ERRORED
+	default:
+		return nil
+	}
+}
+
 var (
 	WAITING   = CommandStatus{Id: 1, Status: "waiting"}
-	QUEUED    = CommandStatus{Id: 1, Status: "queued"}
-	COMPLETED = CommandStatus{Id: 1, Status: "completed"}
-	ERRORED   = CommandStatus{Id: 1, Status: "errored"}
+	QUEUED    = CommandStatus{Id: 2, Status: "queued"}
+	COMPLETED = CommandStatus{Id: 3, Status: "completed"}
+	ERRORED   = CommandStatus{Id: 4, Status: "errored"}
 )
 
 type Command struct {
