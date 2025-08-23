@@ -23,10 +23,15 @@ type CommandFilter struct {
 	RequestedBy       string
 }
 
-func NewService(repo Repository, deviceService *device.Service) *Service {
+func NewService(
+	repo Repository,
+	deviceService *device.Service,
+	commandActionService *command_action.Service,
+) *Service {
 	return &Service{
-		repo:         repo,
-		deviceServie: deviceService,
+		repo:                 repo,
+		deviceServie:         deviceService,
+		commandActionService: commandActionService,
 	}
 }
 

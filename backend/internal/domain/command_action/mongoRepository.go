@@ -13,11 +13,13 @@ type MongoCommandActionRepository struct {
 	collection *mongo.Collection
 }
 
-func NewMongoCommandTypeRepository(col *mongo.Collection) MongoCommandActionRepository {
+func NewMongoCommandActionRepository(
+	col *mongo.Collection,
+) MongoCommandActionRepository {
 	return MongoCommandActionRepository{collection: col}
 }
 
-func (repo *MongoCommandActionRepository) Create(
+func (repo MongoCommandActionRepository) Create(
 	ctx context.Context,
 	cmdAction *CommandAction,
 ) (*string, error) {
@@ -32,15 +34,32 @@ func (repo *MongoCommandActionRepository) Create(
 	return &idHex, nil
 }
 
-func (repo *MongoCommandActionRepository) List(
+func (repo MongoCommandActionRepository) List(
 	ctx context.Context,
 	filter CommandActionFilter,
 ) ([]*CommandAction, error) {
+	mongoFilter := bson.M{}
+	if filter.Name != "" {
+		mongoFilter["name"] = filter.Name
+	}
 
-	return nil, nil
+	cursor, err := repo.collection.Find(ctx, mongoFilter)
+	if err != nil {
+		return nil, err
+	}
+	var commandActions []*CommandAction
+	for cursor.Next(ctx) {
+		var cmdAct CommandAction
+		if err := cursor.Decode(&cmdAct); err != nil {
+			return nil, ErrParsingCmd
+		}
+		commandActions = append(commandActions, &cmdAct)
+	}
+
+	return commandActions, nil
 }
 
-func (repo *MongoCommandActionRepository) GetByName(
+func (repo MongoCommandActionRepository) GetByName(
 	ctx context.Context,
 	name string,
 ) (*CommandAction, error) {
@@ -59,7 +78,7 @@ func (repo *MongoCommandActionRepository) GetByName(
 	return &cmdAction, nil
 }
 
-func (repo *MongoCommandActionRepository) Update(
+func (repo MongoCommandActionRepository) Update(
 	ctx context.Context,
 	cmdAction *CommandAction,
 ) error {
@@ -75,7 +94,7 @@ func (repo *MongoCommandActionRepository) Update(
 
 	delete(updateMap, "_id")
 	delete(updateMap, "name")
-	filter := bson.D{{Key: "name", Value: cmdAction.Name}}
+	filter := bson.D{{Key: "_id", Value: cmdAction.ID}}
 	update := bson.D{{Key: "$set", Value: updateMap}}
 
 	res, err := repo.collection.UpdateOne(ctx, filter, update)
@@ -89,7 +108,7 @@ func (repo *MongoCommandActionRepository) Update(
 	return nil
 }
 
-func (repo *MongoCommandActionRepository) Delete(
+func (repo MongoCommandActionRepository) Delete(
 	ctx context.Context,
 	name string,
 ) error {

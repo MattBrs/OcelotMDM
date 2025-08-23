@@ -1,15 +1,15 @@
 package device_dto
 
 type DeviceCreationRequest struct {
-	Otp          string `json:"otp"`
-	Type         string `json:"type"`
-	Architecture string `json:"architecture"`
+	Otp          string `json:"otp" binding:"required"`
+	Type         string `json:"type" binding:"required"`
+	Architecture string `json:"architecture" binding:"required"`
 }
 
 type DeviceCreationResponse struct {
 	// TODO: add needed client certificates and configurations in the response
-	Name     string `json:"name"`
-	OvpnFile string `json:"ovpn_file"`
+	Name     string `json:"name" binding:"required"`
+	OvpnFile string `json:"ovpn_file" binding:"required"`
 }
 
 type DeviceCreationErrResponse struct {
@@ -17,8 +17,8 @@ type DeviceCreationErrResponse struct {
 }
 
 type UpdateAddressRequest struct {
-	Name      string `json:"name"`
-	IPAddress string `json:"ip_address"`
+	Name      string `json:"name" binding:"required"`
+	IPAddress string `json:"ip_address" binding:"required"`
 }
 
 type UpdateAddressErrResponse struct {

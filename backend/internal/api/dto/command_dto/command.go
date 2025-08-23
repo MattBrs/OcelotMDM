@@ -3,10 +3,10 @@ package command_dto
 import "github.com/MattBrs/OcelotMDM/internal/domain/command"
 
 type AddNewCommadRequest struct {
-	CommandActionName string `bson:"command_action_name"`
-	DeviceName        string `bson:"device_name"`
-	Payload           string `bson:"payload"`
-	Priority          uint   `bson:"priority"`
+	CommandActionName string `bson:"command_action_name" binding:"required"`
+	DeviceName        string `bson:"device_name" binding:"required"`
+	Payload           string `bson:"payload" binding:"required"`
+	Priority          uint   `bson:"priority" binding:"required"`
 }
 
 type AddNewCommadResponse struct {
@@ -24,7 +24,7 @@ type ListCommandsResponse struct {
 }
 
 type DeleteCommandRequest struct {
-	ID string `bson:"id"`
+	ID string `bson:"id" binding:"required"`
 }
 
 type DeleteCommandResponse struct {

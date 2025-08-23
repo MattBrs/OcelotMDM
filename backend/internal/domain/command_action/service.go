@@ -16,7 +16,7 @@ func NewService(repo MongoCommandActionRepository) *Service {
 	}
 }
 
-func (s *Service) AddCommandType(
+func (s *Service) AddCommandAction(
 	ctx context.Context,
 	cmdAction *CommandAction,
 ) (*string, error) {
@@ -26,6 +26,11 @@ func (s *Service) AddCommandType(
 
 	if cmdAction.Description == "" {
 		return nil, ErrDescriptionEmpty
+	}
+
+	_, err := s.repository.GetByName(ctx, cmdAction.Name)
+	if err == nil {
+		return nil, ErrCommandActionNameTaken
 	}
 
 	id, err := s.repository.Create(ctx, cmdAction)
@@ -69,7 +74,12 @@ func (s *Service) Update(
 		return ErrNameEmpty
 	}
 
-	err := s.repository.Update(ctx, &cmdAct)
+	_, err := s.repository.GetByName(ctx, cmdAct.Name)
+	if err != nil {
+		return err
+	}
+
+	err = s.repository.Update(ctx, &cmdAct)
 	if err != nil {
 		return err
 	}

@@ -9,6 +9,7 @@ import (
 	"github.com/MattBrs/OcelotMDM/internal/api/handler"
 	"github.com/MattBrs/OcelotMDM/internal/api/interceptor"
 	"github.com/MattBrs/OcelotMDM/internal/domain/command"
+	"github.com/MattBrs/OcelotMDM/internal/domain/command_action"
 	"github.com/MattBrs/OcelotMDM/internal/domain/device"
 	"github.com/MattBrs/OcelotMDM/internal/domain/token"
 	"github.com/MattBrs/OcelotMDM/internal/domain/user"
@@ -20,10 +21,11 @@ import (
 )
 
 type Handlers struct {
-	userHandler    *api.UserHandler
-	tokenHandler   *api.TokenHandler
-	deviceHandler  *api.DeviceHandler
-	commandHandler *api.CommandHandler
+	userHandler          *api.UserHandler
+	tokenHandler         *api.TokenHandler
+	deviceHandler        *api.DeviceHandler
+	commandHandler       *api.CommandHandler
+	commandActionHandler *api.CommandActionHandler
 }
 
 func initAdminUser(userService *user.Service) {
@@ -128,6 +130,22 @@ func setGinRoutes(router *gin.Engine, handlers Handlers, authIntr *interceptor.I
 		authIntr.CheckAuth,
 		handlers.commandHandler.DeleteCommand,
 	)
+
+	router.POST(
+		"/command_actions/new",
+		authIntr.CheckAuth,
+		handlers.commandActionHandler.AddNewCommandAction,
+	)
+	router.GET(
+		"/command_actions/list",
+		authIntr.CheckAuth,
+		handlers.commandActionHandler.ListCommandActions,
+	)
+	router.POST(
+		"/command_actions/delete",
+		authIntr.CheckAuth,
+		handlers.commandActionHandler.DeleteCommandAction,
+	)
 }
 
 func main() {
@@ -147,23 +165,37 @@ func main() {
 	tokenCol := mongoConn.GetCollection(os.Getenv("DBNAME"), "tokens")
 	deviceCol := mongoConn.GetCollection(os.Getenv("DBNAME"), "devices")
 	commandCol := mongoConn.GetCollection(os.Getenv("DBNAME"), "commands")
+	commandActionCol := mongoConn.GetCollection(
+		os.Getenv("DBNAME"), "command_actions",
+	)
 
 	userRepo := user.NewMongoRepository(userCol)
 	tokenRepo := token.NewMongoRepository(tokenCol)
 	deviceRepo := device.NewMongoRepository(deviceCol)
 	commandRepo := command.NewMongoRepository(commandCol)
+	commandActionRepo := command_action.NewMongoCommandActionRepository(
+		commandActionCol,
+	)
 
 	vpnService := vpn.NewService("http://vpn_api:8080")
 	userService := user.NewService(userRepo)
 	tokenService := token.NewService(tokenRepo)
 	deviceService := device.NewService(deviceRepo, tokenService, vpnService)
-	commandService := command.NewService(commandRepo, deviceService)
+	commandActionService := command_action.NewService(commandActionRepo)
+	commandService := command.NewService(
+		commandRepo,
+		deviceService,
+		commandActionService,
+	)
 
 	handlers := Handlers{
 		userHandler:    api.NewUserHandler(userService),
 		tokenHandler:   api.NewTokenHandler(tokenService),
 		deviceHandler:  api.NewDeviceHandler(deviceService),
 		commandHandler: api.NewCommandHandler(commandService),
+		commandActionHandler: api.NewCommandActionHandler(
+			commandActionService,
+		),
 	}
 
 	authInterceptor := interceptor.NewAuthInterceptor(userService)

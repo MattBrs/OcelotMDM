@@ -7,5 +7,5 @@ type CommandAction struct {
 	Name            string             `bson:"name"`
 	Description     string             `bson:"description"`
 	RequiredOnlne   bool               `bson:"required_online"`
-	defaultPriority uint               `bson:"default_priority"`
+	DefaultPriority uint               `bson:"default_priority"`
 }

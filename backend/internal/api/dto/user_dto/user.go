@@ -1,8 +1,8 @@
 package user_dto
 
 type CreateUserRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
 }
 
 type CreateUserResponse struct {
@@ -11,8 +11,8 @@ type CreateUserResponse struct {
 }
 
 type LoginUserRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
 }
 
 type LoginUserResponse struct {
@@ -21,8 +21,8 @@ type LoginUserResponse struct {
 }
 
 type UpdateUserEnableStatusRequest struct {
-	Username string `json:"username"`
-	Enabled  bool   `json:"enabled"`
+	Username string `json:"username" binding:"required"`
+	Enabled  bool   `json:"enabled" binding:"required"`
 }
 
 type UpdateUserEnableStatusResponse struct {
