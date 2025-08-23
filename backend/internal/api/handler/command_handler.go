@@ -130,10 +130,39 @@ func (handler *CommandHandler) ListCommands(ctx *gin.Context) {
 	)
 }
 
-func (handler *CommandHandler) UpdateCommand(ctx *gin.Context) {
-
-}
-
 func (handler *CommandHandler) DeleteCommand(ctx *gin.Context) {
+	var req command_dto.DeleteCommandRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(
+			http.StatusBadRequest,
+			command_dto.ResponseErr{
+				Error: "could not parse json",
+			},
+		)
 
+		return
+	}
+
+	err := handler.service.Delete(ctx, req.ID)
+	if err != nil {
+		resErr := command_dto.ResponseErr{Error: "generic error"}
+		httpStatus := http.StatusInternalServerError
+
+		switch {
+		case errors.Is(err, command.ErrCommandNotFound):
+			resErr.Error = err.Error()
+			httpStatus = http.StatusNotFound
+		case errors.Is(err, command.ErrIdMalformed):
+			resErr.Error = err.Error()
+			httpStatus = http.StatusBadRequest
+		}
+
+		ctx.JSON(httpStatus, resErr)
+		return
+
+	}
+
+	ctx.JSON(http.StatusOK, command_dto.DeleteCommandResponse{
+		ID: req.ID,
+	})
 }

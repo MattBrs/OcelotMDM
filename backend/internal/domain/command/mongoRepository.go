@@ -17,7 +17,10 @@ func NewMongoRepository(col *mongo.Collection) MongoCommandRepository {
 	return MongoCommandRepository{col}
 }
 
-func (r *MongoCommandRepository) Create(ctx context.Context, command *Command) (*string, error) {
+func (r MongoCommandRepository) Create(
+	ctx context.Context,
+	command *Command,
+) (*string, error) {
 	command.Id = primitive.NewObjectID()
 	_, err := r.collection.InsertOne(ctx, command)
 	if err != nil {
@@ -28,7 +31,10 @@ func (r *MongoCommandRepository) Create(ctx context.Context, command *Command) (
 	return &idStr, nil
 }
 
-func (r *MongoCommandRepository) GetById(ctx context.Context, id primitive.ObjectID) (*Command, error) {
+func (r MongoCommandRepository) GetById(
+	ctx context.Context,
+	id primitive.ObjectID,
+) (*Command, error) {
 	filter := bson.D{{Key: "_id", Value: id}}
 
 	var command Command
@@ -48,7 +54,10 @@ func (r *MongoCommandRepository) GetById(ctx context.Context, id primitive.Objec
 	return &command, nil
 }
 
-func (r *MongoCommandRepository) Update(ctx context.Context, command *Command) error {
+func (r MongoCommandRepository) Update(
+	ctx context.Context,
+	command *Command,
+) error {
 	updateData, err := bson.Marshal(command)
 	if err != nil {
 		return err
@@ -75,7 +84,10 @@ func (r *MongoCommandRepository) Update(ctx context.Context, command *Command) e
 	return nil
 }
 
-func (r *MongoCommandRepository) Delete(ctx context.Context, id primitive.ObjectID) error {
+func (r MongoCommandRepository) Delete(
+	ctx context.Context,
+	id primitive.ObjectID,
+) error {
 	filter := bson.D{{Key: "_id", Value: id}}
 
 	res := r.collection.FindOneAndDelete(ctx, filter)
@@ -90,7 +102,10 @@ func (r *MongoCommandRepository) Delete(ctx context.Context, id primitive.Object
 	return nil
 }
 
-func (r *MongoCommandRepository) List(ctx context.Context, filter CommandFilter) ([]*Command, error) {
+func (r MongoCommandRepository) List(
+	ctx context.Context,
+	filter CommandFilter,
+) ([]*Command, error) {
 	mongoFilter := bson.M{}
 	if filter.Id != "" {
 		mongoFilter["_id"] = filter.Id

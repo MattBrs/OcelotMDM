@@ -22,3 +22,11 @@ type ResponseErr struct {
 type ListCommandsResponse struct {
 	Commands []*command.Command `bson:"commands"`
 }
+
+type DeleteCommandRequest struct {
+	ID string `bson:"id"`
+}
+
+type DeleteCommandResponse struct {
+	ID string `bson:"id"`
+}

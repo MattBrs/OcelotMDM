@@ -8,6 +8,7 @@ import (
 
 	"github.com/MattBrs/OcelotMDM/internal/api/handler"
 	"github.com/MattBrs/OcelotMDM/internal/api/interceptor"
+	"github.com/MattBrs/OcelotMDM/internal/domain/command"
 	"github.com/MattBrs/OcelotMDM/internal/domain/device"
 	"github.com/MattBrs/OcelotMDM/internal/domain/token"
 	"github.com/MattBrs/OcelotMDM/internal/domain/user"
@@ -19,9 +20,10 @@ import (
 )
 
 type Handlers struct {
-	userHandler   *api.UserHandler
-	tokenHandler  *api.TokenHandler
-	deviceHandler *api.DeviceHandler
+	userHandler    *api.UserHandler
+	tokenHandler   *api.TokenHandler
+	deviceHandler  *api.DeviceHandler
+	commandHandler *api.CommandHandler
 }
 
 func initAdminUser(userService *user.Service) {
@@ -86,10 +88,22 @@ func initMongoConn() *storage.MongoConnection {
 
 func setGinRoutes(router *gin.Engine, handlers Handlers, authIntr *interceptor.Interceptor) {
 	router.POST("/devices", handlers.deviceHandler.AddNewDevice)
-	router.GET("/devices", authIntr.CheckAuth, handlers.deviceHandler.ListDevices)
-	router.POST("/devices/updateAddress", authIntr.CheckAuth, handlers.deviceHandler.UpdateDeviceAddress)
+	router.GET(
+		"/devices",
+		authIntr.CheckAuth,
+		handlers.deviceHandler.ListDevices,
+	)
+	router.POST(
+		"/devices/updateAddress",
+		authIntr.CheckAuth,
+		handlers.deviceHandler.UpdateDeviceAddress,
+	)
 
-	router.POST("/token/generate", authIntr.CheckAuth, handlers.tokenHandler.RequestToken)
+	router.POST(
+		"/token/generate",
+		authIntr.CheckAuth,
+		handlers.tokenHandler.RequestToken,
+	)
 
 	router.POST("/user/create", handlers.userHandler.CreateUser)
 	router.POST("/user/login", handlers.userHandler.Login)
@@ -99,6 +113,21 @@ func setGinRoutes(router *gin.Engine, handlers Handlers, authIntr *interceptor.I
 		handlers.userHandler.EnableUser,
 	)
 
+	router.POST(
+		"/command/new",
+		authIntr.CheckAuth,
+		handlers.commandHandler.AddNewCommand,
+	)
+	router.GET(
+		"/command/list",
+		authIntr.CheckAuth,
+		handlers.commandHandler.ListCommands,
+	)
+	router.POST(
+		"/command/delete",
+		authIntr.CheckAuth,
+		handlers.commandHandler.DeleteCommand,
+	)
 }
 
 func main() {
@@ -117,20 +146,24 @@ func main() {
 	userCol := mongoConn.GetCollection(os.Getenv("DBNAME"), "users")
 	tokenCol := mongoConn.GetCollection(os.Getenv("DBNAME"), "tokens")
 	deviceCol := mongoConn.GetCollection(os.Getenv("DBNAME"), "devices")
+	commandCol := mongoConn.GetCollection(os.Getenv("DBNAME"), "commands")
 
 	userRepo := user.NewMongoRepository(userCol)
 	tokenRepo := token.NewMongoRepository(tokenCol)
 	deviceRepo := device.NewMongoRepository(deviceCol)
+	commandRepo := command.NewMongoRepository(commandCol)
 
 	vpnService := vpn.NewService("http://vpn_api:8080")
 	userService := user.NewService(userRepo)
 	tokenService := token.NewService(tokenRepo)
 	deviceService := device.NewService(deviceRepo, tokenService, vpnService)
+	commandService := command.NewService(commandRepo, deviceService)
 
 	handlers := Handlers{
-		userHandler:   api.NewUserHandler(userService),
-		tokenHandler:  api.NewTokenHandler(tokenService),
-		deviceHandler: api.NewDeviceHandler(deviceService),
+		userHandler:    api.NewUserHandler(userService),
+		tokenHandler:   api.NewTokenHandler(tokenService),
+		deviceHandler:  api.NewDeviceHandler(deviceService),
+		commandHandler: api.NewCommandHandler(commandService),
 	}
 
 	authInterceptor := interceptor.NewAuthInterceptor(userService)
