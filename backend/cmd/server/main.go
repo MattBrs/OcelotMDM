@@ -125,6 +125,11 @@ func setGinRoutes(router *gin.Engine, handlers Handlers, authIntr *interceptor.I
 		authIntr.CheckAuth,
 		handlers.commandHandler.ListCommands,
 	)
+	router.POST(
+		"/command/update/status",
+		authIntr.CheckAuth,
+		handlers.commandHandler.UpdateCommandStatus,
+	)
 
 	router.POST(
 		"/command_actions/new",

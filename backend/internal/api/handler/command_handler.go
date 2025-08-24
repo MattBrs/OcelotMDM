@@ -193,3 +193,75 @@ func (handler *CommandHandler) DeleteCommand(ctx *gin.Context) {
 		ID: req.ID,
 	})
 }
+
+func (handler *CommandHandler) UpdateCommandStatus(ctx *gin.Context) {
+	var req command_dto.UpdateCommandStatusRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(
+			http.StatusBadRequest,
+			command_dto.ResponseErr{
+				Error: "could not parse json",
+			},
+		)
+		return
+	}
+
+	newStatus := command.StatusFromString(req.Status)
+	if newStatus == nil ||
+		newStatus != &command.COMPLETED &&
+			newStatus != &command.ERRORED {
+		ctx.JSON(
+			http.StatusBadRequest,
+			command_dto.ResponseErr{
+				Error: `could not parse status. 
+				should be either completed or errored`,
+			},
+		)
+
+		return
+	}
+
+	if newStatus == &command.ERRORED && req.ErrorDescription == "" {
+		ctx.JSON(
+			http.StatusBadRequest,
+			command_dto.ResponseErr{
+				Error: "errored status must have error description",
+			},
+		)
+
+		return
+	}
+
+	errDesc := ""
+	if newStatus == &command.ERRORED {
+		errDesc = req.ErrorDescription
+	}
+
+	err := handler.service.UpdateStatus(ctx, req.ID, *newStatus, errDesc)
+	if err != nil {
+		httpStatus := http.StatusInternalServerError
+		errRes := command_dto.ResponseErr{
+			Error: "generic error",
+		}
+
+		switch {
+		case errors.Is(err, command.ErrCommandNotFound):
+			httpStatus = http.StatusNotFound
+			errRes.Error = err.Error()
+		case errors.Is(err, command.ErrIdMalformed):
+			httpStatus = http.StatusBadRequest
+			errRes.Error = err.Error()
+		}
+
+		ctx.JSON(httpStatus, errRes)
+		return
+	}
+
+	ctx.JSON(
+		http.StatusOK,
+		command_dto.UpdateCommandStatusResponse{
+			ID:        req.ID,
+			NewStatus: req.Status,
+		},
+	)
+}

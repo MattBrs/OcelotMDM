@@ -30,3 +30,14 @@ type DeleteCommandRequest struct {
 type DeleteCommandResponse struct {
 	ID string `json:"id"`
 }
+
+type UpdateCommandStatusRequest struct {
+	ID               string `json:"id"`
+	Status           string `json:"status"`
+	ErrorDescription string `json:"error_description,omitempty"`
+}
+
+type UpdateCommandStatusResponse struct {
+	ID        string `json:"id"`
+	NewStatus string `json:"new_status"`
+}

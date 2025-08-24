@@ -35,15 +35,25 @@ func NewService(
 	}
 }
 
-func (s *Service) EnqueueCommand(ctx context.Context, cmd *Command) (*string, error) {
+func (s *Service) EnqueueCommand(
+	ctx context.Context,
+	cmd *Command,
+) (*string, error) {
 	_, err := s.deviceServie.GetByName(ctx, cmd.DeviceName)
 	if err != nil {
 		return nil, ErrDeviceNotFound
 	}
 
-	_, err = s.commandActionService.GetByName(ctx, cmd.CommandActionName)
+	foundCmdAct, err := s.commandActionService.GetByName(
+		ctx, cmd.CommandActionName,
+	)
+
 	if err != nil {
 		return nil, command_action.ErrCommandActionNotFound
+	}
+
+	if foundCmdAct.PayloadRequired && cmd.Payload == "" {
+		return nil, ErrPayloadRequired
 	}
 
 	newCmdId, err := s.repo.Create(ctx, cmd)
@@ -75,6 +85,32 @@ func (s *Service) GetById(ctx context.Context, id string) (*Command, error) {
 	}
 
 	return dev, nil
+}
+
+func (s *Service) UpdateStatus(
+	ctx context.Context,
+	id string,
+	newStatus CommandStatus,
+	errorDesc string,
+) error {
+	idObj, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return ErrIdMalformed
+	}
+
+	foundCommand, err := s.repo.GetById(ctx, idObj)
+	if err != nil {
+		return err
+	}
+
+	foundCommand.Status = newStatus
+	foundCommand.ErrorDescription = errorDesc
+	err = s.repo.Update(ctx, foundCommand)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *Service) Update(ctx context.Context, cmd *Command) error {

@@ -8,4 +8,5 @@ type CommandAction struct {
 	Description     string             `bson:"description"`
 	RequiredOnlne   bool               `bson:"required_online"`
 	DefaultPriority uint               `bson:"default_priority"`
+	PayloadRequired bool               `bson:"payload_required"`
 }
