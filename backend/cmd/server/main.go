@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/MattBrs/OcelotMDM/internal/api/handler"
@@ -11,6 +12,7 @@ import (
 	"github.com/MattBrs/OcelotMDM/internal/domain/command"
 	"github.com/MattBrs/OcelotMDM/internal/domain/command_action"
 	"github.com/MattBrs/OcelotMDM/internal/domain/device"
+	"github.com/MattBrs/OcelotMDM/internal/domain/paho_mqtt"
 	"github.com/MattBrs/OcelotMDM/internal/domain/token"
 	"github.com/MattBrs/OcelotMDM/internal/domain/user"
 	"github.com/MattBrs/OcelotMDM/internal/domain/vpn"
@@ -204,6 +206,26 @@ func main() {
 
 	router := gin.Default()
 	setGinRoutes(router, handlers, authInterceptor)
+
+	mqttHost := os.Getenv("MQTT_HOST")
+	mqttPort, err := strconv.Atoi(os.Getenv("MQTT_PORT"))
+	if err != nil {
+		fmt.Println("mqtt port is not a number")
+		panic(1)
+	}
+
+	pahoClient := paho_mqtt.NewMqttClient(
+		mqttHost,
+		uint(mqttPort),
+	)
+
+	err = pahoClient.Connect()
+	if err != nil {
+		fmt.Println("unable to establish mqtt connection")
+		panic(1)
+	}
+
+	pahoClient.Subscribe("test", 0)
 
 	err = router.Run(":8080") // will expose this later with nginx
 	if err != nil {
