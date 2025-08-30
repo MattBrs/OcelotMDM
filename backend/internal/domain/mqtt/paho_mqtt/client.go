@@ -8,15 +8,8 @@ import (
 )
 
 type MqttClient struct {
-	client mqtt.Client
-}
-
-var messageHandler = func(client mqtt.Client, message mqtt.Message) {
-	fmt.Printf(
-		"received message %s from topic %s\n",
-		message.Payload(),
-		message.Topic(),
-	)
+	client   mqtt.Client
+	Messages chan mqtt.Message
 }
 
 var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
@@ -36,21 +29,36 @@ func NewMqttClient(server string, port uint) MqttClient {
 	opts.SetClientID("ocelot_backend")
 	opts.OnConnect = connectHandler
 	opts.OnConnectionLost = connectionLostHandler
-	opts.SetDefaultPublishHandler(messageHandler)
+	opts.CleanSession = false
 
 	return MqttClient{
-		client: mqtt.NewClient(opts),
+		client:   mqtt.NewClient(opts),
+		Messages: make(chan mqtt.Message, 1000),
 	}
 }
 
-func (mc MqttClient) Publish(message string, topic string, qos byte) {
-	mc.client.Publish(topic, qos, true, message)
+func (mc MqttClient) Publish(message string, topic string, qos byte) error {
+	pubToken := mc.client.Publish(topic, qos, true, message)
+
+	pubToken.Wait()
+	return pubToken.Error()
 }
 
-func (mc MqttClient) Subscribe(topic string, qos byte) {
-	subToken := mc.client.Subscribe(topic, qos, nil)
+func (mc MqttClient) Subscribe(topic string, qos byte) error {
+	subToken := mc.client.Subscribe(topic, qos, func(_ mqtt.Client, msg mqtt.Message) {
+		select {
+		case mc.Messages <- msg:
+			// queued
+		default:
+			fmt.Println(
+				"MQTT queue full, discarded message: ",
+				string(msg.Payload()),
+			)
+		}
+	})
+
 	subToken.Wait()
-	fmt.Println("subscribed successfully to topic: ", topic)
+	return subToken.Error()
 }
 
 func (mc MqttClient) Connect() error {
@@ -58,4 +66,9 @@ func (mc MqttClient) Connect() error {
 	connectToken.Wait()
 
 	return connectToken.Error()
+}
+
+func (mc MqttClient) Close() {
+	mc.client.Disconnect(500)
+	close(mc.Messages)
 }

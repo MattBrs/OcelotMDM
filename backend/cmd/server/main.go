@@ -11,8 +11,9 @@ import (
 	"github.com/MattBrs/OcelotMDM/internal/api/interceptor"
 	"github.com/MattBrs/OcelotMDM/internal/domain/command"
 	"github.com/MattBrs/OcelotMDM/internal/domain/command_action"
+	"github.com/MattBrs/OcelotMDM/internal/domain/command_queue"
 	"github.com/MattBrs/OcelotMDM/internal/domain/device"
-	"github.com/MattBrs/OcelotMDM/internal/domain/paho_mqtt"
+	"github.com/MattBrs/OcelotMDM/internal/domain/mqtt/ocelot_mqtt"
 	"github.com/MattBrs/OcelotMDM/internal/domain/token"
 	"github.com/MattBrs/OcelotMDM/internal/domain/user"
 	"github.com/MattBrs/OcelotMDM/internal/domain/vpn"
@@ -214,7 +215,7 @@ func main() {
 		panic(1)
 	}
 
-	pahoClient := paho_mqtt.NewMqttClient(
+	pahoClient := ocelot_mqtt.NewMqttClient(
 		mqttHost,
 		uint(mqttPort),
 	)
@@ -225,7 +226,20 @@ func main() {
 		panic(1)
 	}
 
-	pahoClient.Subscribe("test", 0)
+	defer pahoClient.Close()
+
+	err = pahoClient.Subscribe("test", 0)
+	if err != nil {
+		fmt.Println("error un subscription for topic test")
+	}
+
+	commandQueueService := command_queue.NewService(
+		pahoClient,
+		time.Second*10,
+	)
+	commandQueueService.Start()
+
+	defer commandQueueService.Stop()
 
 	err = router.Run(":8080") // will expose this later with nginx
 	if err != nil {

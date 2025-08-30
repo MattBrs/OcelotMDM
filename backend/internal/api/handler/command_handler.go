@@ -62,7 +62,7 @@ func (handler *CommandHandler) AddNewCommand(ctx *gin.Context) {
 		CommandActionName: req.CommandActionName,
 		DeviceName:        req.DeviceName,
 		Payload:           req.Payload,
-		Status:            command.QUEUED,
+		Status:            command.WAITING,
 		CreatedAt:         &creationTime,
 		QueuedAt:          &creationTime,
 		CompletedAt:       nil,
