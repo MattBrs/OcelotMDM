@@ -12,4 +12,9 @@ type Repository interface {
 	Update(ctx context.Context, command *Command) error
 	Delete(ctx context.Context, id primitive.ObjectID) error
 	List(ctx context.Context, filter CommandFilter) ([]*Command, error)
+	UpdateMany(
+		ctx context.Context,
+		ids []*primitive.ObjectID,
+		updateMask CommandUpdateManyMask,
+	) error
 }

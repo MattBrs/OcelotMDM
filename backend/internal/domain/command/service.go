@@ -21,6 +21,13 @@ type CommandFilter struct {
 	Status            *CommandStatus
 	Priority          *uint
 	RequestedBy       string
+	QueueID           primitive.ObjectID
+}
+
+type CommandUpdateManyMask struct {
+	Status   *CommandStatus
+	Priority *uint
+	QueueID  *primitive.ObjectID
 }
 
 func NewService(
@@ -106,6 +113,55 @@ func (s *Service) UpdateStatus(
 	foundCommand.Status = newStatus
 	foundCommand.ErrorDescription = errorDesc
 	err = s.repo.Update(ctx, foundCommand)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Service) Enqueue(
+	ctx context.Context,
+	id string,
+	queueID primitive.ObjectID,
+) error {
+	idObj, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return ErrIdMalformed
+	}
+
+	foundCommand, err := s.repo.GetById(ctx, idObj)
+	if err != nil {
+		return err
+	}
+
+	foundCommand.Status = QUEUED
+	foundCommand.QueueID = queueID
+	err = s.repo.Update(ctx, foundCommand)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Service) EnqueueMany(
+	ctx context.Context,
+	commands []*Command,
+	queueID primitive.ObjectID,
+) error {
+	var ids []*primitive.ObjectID
+	var updateMask CommandUpdateManyMask
+
+	for i := range commands {
+		ids = append(ids, &commands[i].Id)
+	}
+
+	queueId := primitive.NewObjectID()
+	updateMask.Status = &QUEUED
+	updateMask.QueueID = &queueId
+
+	err := s.repo.UpdateMany(ctx, ids, updateMask)
 	if err != nil {
 		return err
 	}

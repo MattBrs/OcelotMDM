@@ -228,13 +228,15 @@ func main() {
 
 	defer pahoClient.Close()
 
-	err = pahoClient.Subscribe("test", 0)
+	err = pahoClient.Subscribe("ack", 0)
 	if err != nil {
 		fmt.Println("error un subscription for topic test")
 	}
 
 	commandQueueService := command_queue.NewService(
+		context.Background(),
 		pahoClient,
+		commandService,
 		time.Second*10,
 	)
 	commandQueueService.Start()

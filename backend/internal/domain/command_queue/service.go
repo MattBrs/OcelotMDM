@@ -1,26 +1,35 @@
 package command_queue
 
 import (
+	"context"
 	"fmt"
 	"time"
 
+	"github.com/MattBrs/OcelotMDM/internal/domain/command"
 	"github.com/MattBrs/OcelotMDM/internal/domain/mqtt/ocelot_mqtt"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type CommandQueueService struct {
-	ticker      *time.Ticker
-	doneChannel chan bool
-	mqttClient  *ocelot_mqtt.MqttClient
+	ticker         *time.Ticker
+	doneChannel    chan bool
+	mqttClient     *ocelot_mqtt.MqttClient
+	commandService *command.Service
+	ctx            context.Context
 }
 
 func NewService(
+	context context.Context,
 	messageHandler *ocelot_mqtt.MqttClient,
+	cmdService *command.Service,
 	tickerInterval time.Duration,
 ) *CommandQueueService {
 	service := CommandQueueService{
-		ticker:      time.NewTicker(tickerInterval),
-		doneChannel: make(chan bool),
-		mqttClient:  messageHandler,
+		ticker:         time.NewTicker(tickerInterval),
+		doneChannel:    make(chan bool),
+		mqttClient:     messageHandler,
+		commandService: cmdService,
+		ctx:            context,
 	}
 
 	return &service
@@ -37,9 +46,8 @@ func startSender(service *CommandQueueService) {
 			select {
 			case <-service.doneChannel:
 				return
-			case t := <-service.ticker.C:
-				// read waiting commands from DB and enqueue them on mqtt
-				fmt.Println("ticker ticked at ", t)
+			case <-service.ticker.C:
+				onFetch(service)
 			}
 		}
 	}()
@@ -52,8 +60,7 @@ func startReceiver(service *CommandQueueService) {
 			case <-service.doneChannel:
 				return
 			case msg := <-service.mqttClient.AckMessages:
-				// handle msg
-				fmt.Println("received msg from topic: ", msg.Topic)
+				onAckResponse(service, &msg)
 			}
 		}
 	}()
@@ -67,4 +74,57 @@ func (service *CommandQueueService) Stop() {
 	close(service.doneChannel)
 
 	fmt.Println("queue service stopped successfully")
+}
+
+func fetchWaitingCmds(s *CommandQueueService) ([]*command.Command, error) {
+	commands, err := s.commandService.ListCommands(
+		s.ctx, command.CommandFilter{
+			Status: &command.WAITING,
+		},
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return commands, nil
+}
+
+func enqueueWaitingCmds(
+	s *CommandQueueService,
+	cmds []*command.Command,
+) (*primitive.ObjectID, error) {
+	queueID := primitive.NewObjectID()
+	err := s.commandService.EnqueueMany(s.ctx, cmds, queueID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &queueID, nil
+}
+
+func onFetch(s *CommandQueueService) {
+	commands, err := fetchWaitingCmds(s)
+	if err != nil {
+		fmt.Println("error while fetching the commands: ", err.Error())
+		return
+	}
+
+	if len(commands) == 0 {
+		fmt.Println("no commands to enqueue")
+		return
+	}
+
+	queueID, err := enqueueWaitingCmds(s, commands)
+	if err != nil {
+		fmt.Println("could not enqueue commands: ", err.Error())
+	} else {
+		fmt.Printf("enqueued %d commands with queueID %s\n", len(commands), queueID.Hex())
+	}
+
+	// TODO(matteobrusarosco): send enqueued commands to devices with mqtt
+}
+
+func onAckResponse(s *CommandQueueService, msg *ocelot_mqtt.ChanMessage) {
+	fmt.Println(" on reponse, received msg from topic: ", msg.Topic)
 }

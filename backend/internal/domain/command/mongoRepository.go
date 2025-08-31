@@ -84,6 +84,39 @@ func (r MongoCommandRepository) Update(
 	return nil
 }
 
+func (r MongoCommandRepository) UpdateMany(
+	ctx context.Context,
+	ids []*primitive.ObjectID,
+	updateMask CommandUpdateManyMask,
+) error {
+	updateMap := bson.M{}
+	if updateMask.Status != nil {
+		updateMap["status"] = updateMask.Status
+	}
+
+	if updateMask.Priority != nil {
+		updateMap["priority"] = updateMask.Priority
+	}
+
+	if updateMask.QueueID != nil {
+		updateMap["queue_id"] = updateMask.QueueID
+	}
+
+	filter := bson.M{"_id": bson.M{"$in": ids}}
+	update := bson.D{{Key: "$set", Value: updateMap}}
+
+	res, err := r.collection.UpdateMany(ctx, filter, update)
+	if err != nil {
+		return err
+	}
+
+	if res.MatchedCount == 0 {
+		return ErrCommandNotFound
+	}
+
+	return nil
+}
+
 func (r MongoCommandRepository) Delete(
 	ctx context.Context,
 	id primitive.ObjectID,

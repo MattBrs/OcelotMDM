@@ -17,6 +17,8 @@ func StatusFromString(val string) *CommandStatus {
 		return &COMPLETED
 	case QUEUED.Status:
 		return &QUEUED
+	case ACKED.Status:
+		return &ACKED
 	case COMPLETED.Status:
 		return &COMPLETED
 	case ERRORED.Status:
@@ -29,8 +31,9 @@ func StatusFromString(val string) *CommandStatus {
 var (
 	WAITING   = CommandStatus{Id: 1, Status: "waiting"}
 	QUEUED    = CommandStatus{Id: 2, Status: "queued"}
-	COMPLETED = CommandStatus{Id: 3, Status: "completed"}
-	ERRORED   = CommandStatus{Id: 4, Status: "errored"}
+	ACKED     = CommandStatus{Id: 3, Status: "acknowledged"}
+	COMPLETED = CommandStatus{Id: 4, Status: "completed"}
+	ERRORED   = CommandStatus{Id: 5, Status: "errored"}
 )
 
 type Command struct {
@@ -45,4 +48,5 @@ type Command struct {
 	Priority          uint               `bson:"priority"`
 	RequestedBy       string             `bson:"requested_by"`
 	ErrorDescription  string             `bson:"error_desc,omitempty"`
+	QueueID           primitive.ObjectID `bson:"queue_id,omitempty"`
 }

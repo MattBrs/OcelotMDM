@@ -94,8 +94,8 @@ func (handler *CommandHandler) AddNewCommand(ctx *gin.Context) {
 		http.StatusCreated,
 		command_dto.AddNewCommadResponse{
 			ID:                *id,
-			CommandActionName: req.CommandActionName,
-			Status:            command.QUEUED,
+			CommandActionName: cmd.CommandActionName,
+			Status:            cmd.Status,
 		},
 	)
 }

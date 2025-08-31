@@ -48,7 +48,6 @@ func (mc MqttClient) Subscribe(topic string, qos byte) error {
 	subToken := mc.client.Subscribe(topic, qos, func(_ mqtt.Client, msg mqtt.Message) {
 		select {
 		case mc.Messages <- msg:
-			// queued
 		default:
 			fmt.Println(
 				"MQTT queue full, discarded message: ",
