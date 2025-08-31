@@ -122,7 +122,22 @@ func onFetch(s *CommandQueueService) {
 		fmt.Printf("enqueued %d commands with queueID %s\n", len(commands), queueID.Hex())
 	}
 
-	// TODO(matteobrusarosco): send enqueued commands to devices with mqtt
+	for i := range commands {
+		err = s.mqttClient.Publish(
+			commands[i].CommandActionName,
+			commands[i].DeviceName+"/cmd",
+			1,
+		)
+
+		if err != nil {
+			_ = s.commandService.UpdateStatus(
+				s.ctx,
+				commands[i].Id.Hex(),
+				command.ERRORED,
+				fmt.Sprintf("could not send to device because: %s", err.Error()),
+			)
+		}
+	}
 }
 
 func onAckResponse(s *CommandQueueService, msg *ocelot_mqtt.ChanMessage) {
