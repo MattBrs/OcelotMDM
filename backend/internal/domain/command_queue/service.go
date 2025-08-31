@@ -3,6 +3,7 @@ package command_queue
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/MattBrs/OcelotMDM/internal/domain/command"
@@ -117,20 +118,23 @@ func onFetch(s *CommandQueueService) {
 
 	queueID, err := enqueueWaitingCmds(s, commands)
 	if err != nil {
-		fmt.Println("could not enqueue commands: ", err.Error())
-	} else {
-		fmt.Printf("enqueued %d commands with queueID %s\n", len(commands), queueID.Hex())
+		fmt.Println("commands were not enqueued because: ", err.Error())
+		return
 	}
 
+	fmt.Println("commands have beed enqueued with ID: ", queueID.Hex())
+
 	for i := range commands {
+		// TODO(matteobrusarosco):
+		// sent commands should contain ID, cmd_type and payload
 		err = s.mqttClient.Publish(
-			commands[i].CommandActionName,
+			commands[i].Id.Hex()+commands[i].CommandActionName,
 			commands[i].DeviceName+"/cmd",
 			1,
 		)
 
 		if err != nil {
-			_= s.commandService.UpdateStatus(
+			_ = s.commandService.UpdateStatus(
 				s.ctx,
 				commands[i].Id.Hex(),
 				command.ERRORED,
@@ -144,5 +148,24 @@ func onFetch(s *CommandQueueService) {
 }
 
 func onAckResponse(s *CommandQueueService, msg *ocelot_mqtt.ChanMessage) {
+	splittedTopic := strings.Split(msg.Topic, "/")
+	if len(splittedTopic) != 2 {
+		fmt.Println("is not ack from device")
+		return
+	}
+
+	// on ack topic there are only IDs of acked commands
+	err := s.commandService.UpdateStatus(
+		s.ctx,
+		string(msg.Payload),
+		command.ACKED,
+		"",
+	)
+
+	if err != nil {
+		fmt.Println("could not update command status: ", err.Error())
+		return
+	}
+
 	fmt.Println(" on reponse, received msg from topic: ", msg.Topic)
 }

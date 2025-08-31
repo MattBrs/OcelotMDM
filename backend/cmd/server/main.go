@@ -228,7 +228,7 @@ func main() {
 
 	defer pahoClient.Close()
 
-	err = pahoClient.Subscribe("ack", 0)
+	err = pahoClient.Subscribe("misty-dew/ack", 0)
 	if err != nil {
 		fmt.Println("error un subscription for topic test")
 	}

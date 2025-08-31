@@ -43,7 +43,7 @@ func (r MongoCommandRepository) GetById(
 		var returnErr error
 		switch {
 		case errors.Is(err, mongo.ErrNoDocuments):
-			returnErr = ErrDeviceNotFound
+			returnErr = ErrCommandNotFound
 		default:
 			returnErr = ErrParsingResult
 		}
@@ -140,7 +140,7 @@ func (r MongoCommandRepository) List(
 	filter CommandFilter,
 ) ([]*Command, error) {
 	mongoFilter := bson.M{}
-	if filter.Id != "" {
+	if filter.Id != nil {
 		mongoFilter["_id"] = filter.Id
 	}
 

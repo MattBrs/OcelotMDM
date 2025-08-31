@@ -11,6 +11,7 @@ import (
 	"github.com/MattBrs/OcelotMDM/internal/domain/command_action"
 	"github.com/MattBrs/OcelotMDM/internal/domain/user"
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type CommandHandler struct {
@@ -123,8 +124,16 @@ func (handler *CommandHandler) ListCommands(ctx *gin.Context) {
 
 	}
 
+	objId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, command_dto.ResponseErr{
+			Error: "id is not hex",
+		})
+		return
+	}
+
 	filter := command.CommandFilter{
-		Id:                id,
+		Id:                &objId,
 		DeviceName:        deviceName,
 		Status:            command.StatusFromString(status),
 		CommandActionName: commandActionName,

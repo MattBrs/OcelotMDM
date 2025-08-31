@@ -15,7 +15,7 @@ type Service struct {
 }
 
 type CommandFilter struct {
-	Id                string
+	Id                *primitive.ObjectID
 	DeviceName        string
 	CommandActionName string
 	Status            *CommandStatus
