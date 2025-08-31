@@ -130,7 +130,7 @@ func onFetch(s *CommandQueueService) {
 		)
 
 		if err != nil {
-			err = s.commandService.UpdateStatus(
+			_= s.commandService.UpdateStatus(
 				s.ctx,
 				commands[i].Id.Hex(),
 				command.ERRORED,
