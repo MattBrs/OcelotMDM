@@ -130,11 +130,14 @@ func onFetch(s *CommandQueueService) {
 		)
 
 		if err != nil {
-			_ = s.commandService.UpdateStatus(
+			err = s.commandService.UpdateStatus(
 				s.ctx,
 				commands[i].Id.Hex(),
 				command.ERRORED,
-				fmt.Sprintf("could not send to device because: %s", err.Error()),
+				fmt.Sprintf(
+					"could not send to device because: %s",
+					err.Error(),
+				),
 			)
 		}
 	}
