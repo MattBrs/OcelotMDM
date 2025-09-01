@@ -42,3 +42,6 @@
 build/
 certs/
 .env
+openvpn-data/
+mosquitto/data/
+
