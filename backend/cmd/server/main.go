@@ -151,6 +151,41 @@ func setGinRoutes(router *gin.Engine, handlers Handlers, authIntr *interceptor.I
 	)
 }
 
+func initMqttClient(deviceService *device.Service) *ocelot_mqtt.MqttClient {
+	mqttHost := os.Getenv("MQTT_HOST")
+	mqttPort, err := strconv.Atoi(os.Getenv("MQTT_PORT"))
+	if err != nil {
+		fmt.Println("mqtt port is not a number")
+		panic(1)
+	}
+
+	mqttClient := ocelot_mqtt.NewMqttClient(mqttHost, uint(mqttPort))
+
+	err = mqttClient.Connect()
+	if err != nil {
+		fmt.Println("unable to establish mqtt connection")
+		panic(1)
+	}
+
+	devices, err := deviceService.ListDevices(
+		context.Background(),
+		device.DeviceFilter{},
+	)
+
+	if err != nil {
+		fmt.Println("could not fetch devices list: ", err.Error())
+		panic(1)
+	}
+
+	for i := range devices {
+		deviceName := devices[i].Name
+
+		_ = mqttClient.Subscribe(deviceName+"/ack", 1)
+	}
+
+	return mqttClient
+}
+
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -208,34 +243,12 @@ func main() {
 	router := gin.Default()
 	setGinRoutes(router, handlers, authInterceptor)
 
-	mqttHost := os.Getenv("MQTT_HOST")
-	mqttPort, err := strconv.Atoi(os.Getenv("MQTT_PORT"))
-	if err != nil {
-		fmt.Println("mqtt port is not a number")
-		panic(1)
-	}
-
-	pahoClient := ocelot_mqtt.NewMqttClient(
-		mqttHost,
-		uint(mqttPort),
-	)
-
-	err = pahoClient.Connect()
-	if err != nil {
-		fmt.Println("unable to establish mqtt connection")
-		panic(1)
-	}
-
-	defer pahoClient.Close()
-
-	err = pahoClient.Subscribe("misty-dew/ack", 0)
-	if err != nil {
-		fmt.Println("error un subscription for topic test")
-	}
+	mqttClient := initMqttClient(deviceService)
+	defer mqttClient.Close()
 
 	commandQueueService := command_queue.NewService(
 		context.Background(),
-		pahoClient,
+		mqttClient,
 		commandService,
 		time.Second*10,
 	)
