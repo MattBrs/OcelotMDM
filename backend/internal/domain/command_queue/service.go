@@ -3,6 +3,7 @@ package command_queue
 import (
 	"context"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -160,20 +161,25 @@ func onAckResponse(s *CommandQueueService, msg *ocelot_mqtt.ChanMessage) {
 		return
 	}
 
-	// on ack topic there are only IDs of acked commands
-	err := s.commandService.UpdateStatus(
+	fmt.Println("received ack from: ", splittedTopic[0])
+
+	id, state, errorMsg, err := decodeAckMessage(string(msg.Payload))
+	if err != nil {
+		fmt.Println("could not decode ackMessage: ", err.Error())
+		return
+	}
+
+	err = s.commandService.UpdateStatus(
 		s.ctx,
-		string(msg.Payload),
-		command.ACKED,
-		"",
+		*id,
+		*state,
+		*errorMsg,
 	)
 
 	if err != nil {
 		fmt.Println("could not update command status: ", err.Error())
 		return
 	}
-
-	fmt.Println(" on reponse, received msg from topic: ", msg.Topic)
 }
 
 func encodeCommandMessage(
@@ -197,4 +203,34 @@ func encodeCommandMessage(
 	}
 
 	return hex.EncodeToString(b), nil
+}
+
+func decodeAckMessage(
+	hexData string,
+) (*string, *command.CommandStatus, *string, error) {
+	type unpacked struct {
+		Id       string
+		State    string
+		errorMsg string
+	}
+
+	data, err := hex.DecodeString(hexData)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("could not decode data '%s' because %s",
+			hexData,
+			err.Error())
+	}
+
+	var msg unpacked
+	err = msgpack.Unmarshal(data, &msg)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("could not unmarshal message: %s", err.Error())
+	}
+
+	state := command.StatusFromString(msg.State)
+	if state == nil {
+		return nil, nil, nil, fmt.Errorf("state not found: %s", msg.State)
+	}
+
+	return &msg.Id, state, &msg.errorMsg, nil
 }
