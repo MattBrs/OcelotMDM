@@ -2,12 +2,14 @@ package command_queue
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/MattBrs/OcelotMDM/internal/domain/command"
 	"github.com/MattBrs/OcelotMDM/internal/domain/mqtt/ocelot_mqtt"
+	"github.com/vmihailenco/msgpack/v5"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -125,14 +127,18 @@ func onFetch(s *CommandQueueService) {
 	fmt.Println("commands have beed enqueued with ID: ", queueID.Hex())
 
 	for i := range commands {
-		// TODO(matteobrusarosco):
-		// sent commands should contain ID, cmd_type and payload
-		err = s.mqttClient.Publish(
-			commands[i].Id.Hex()+commands[i].CommandActionName,
-			commands[i].DeviceName+"/cmd",
-			1,
+		topic := commands[i].DeviceName + "/cmd"
+		encoded, err := encodeCommandMessage(
+			commands[i].Id.Hex(),
+			commands[i].CommandActionName,
+			commands[i].Payload,
 		)
+		if err != nil {
+			fmt.Println("could not encode command: ", err.Error())
+			continue
+		}
 
+		err = s.mqttClient.Publish(encoded, topic, 1)
 		if err != nil {
 			_ = s.commandService.UpdateStatus(
 				s.ctx,
@@ -168,4 +174,27 @@ func onAckResponse(s *CommandQueueService, msg *ocelot_mqtt.ChanMessage) {
 	}
 
 	fmt.Println(" on reponse, received msg from topic: ", msg.Topic)
+}
+
+func encodeCommandMessage(
+	id string,
+	messageAction string,
+	payload string,
+) (string, error) {
+	type packed struct {
+		Id            string
+		MessageAction string
+		Payload       string
+	}
+
+	b, err := msgpack.Marshal(&packed{
+		Id:            id,
+		MessageAction: messageAction,
+		Payload:       payload,
+	})
+	if err != nil {
+		return "", err
+	}
+
+	return hex.EncodeToString(b), nil
 }
