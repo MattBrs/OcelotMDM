@@ -3,7 +3,6 @@ package command_queue
 import (
 	"context"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"strings"
 	"time"
