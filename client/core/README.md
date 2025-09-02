@@ -7,6 +7,7 @@ conan install . --output-folder=build --build=missing
 
 To generate the build steps
 ~~~
+cd build
 cmake .. -GNinja  -DCMAKE_TOOLCHAIN_FILE=build/Release/generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release
 ~~~
 

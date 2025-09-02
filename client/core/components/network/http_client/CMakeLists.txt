@@ -5,4 +5,4 @@ add_library(${LIBRARY_NAME} STATIC ${CMAKE_CURRENT_SOURCE_DIR}/http_client.hpp
 
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_library(OcelotMDM::Component::HttpClient ALIAS ${LIBRARY_NAME})
+add_library(OcelotMDM::Component::Network::HttpClient ALIAS ${LIBRARY_NAME})

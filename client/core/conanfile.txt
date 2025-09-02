@@ -1,6 +1,7 @@
 [requires]
 libcurl/8.12.1
 paho-mqtt-cpp/1.5.3
+msgpack-cxx/7.0.0
 
 [generators]
 CMakeDeps

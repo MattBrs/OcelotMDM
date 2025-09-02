@@ -1,5 +1,7 @@
 #include "http_client.hpp"
 
-OcelotMDM::component::HttpClient::HttpClient() {
+namespace OcelotMDM::component::network {
+HttpClient::HttpClient() {
     // for now nothing
-}
+};
+};

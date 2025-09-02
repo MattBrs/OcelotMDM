@@ -1,9 +1,10 @@
 #pragma once
 
-namespace OcelotMDM::component {
+namespace OcelotMDM::component::network {
 class HttpClient {
-    public:
-        explicit HttpClient();
-    private:
+   public:
+    explicit HttpClient();
+
+   private:
 };
-}; // namespace OcelotMDM::component
+};  // namespace OcelotMDM::component::network
