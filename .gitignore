@@ -45,3 +45,4 @@ certs/
 openvpn-data/
 mosquitto/data/
 
+.cache/
