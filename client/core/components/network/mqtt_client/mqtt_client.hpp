@@ -15,7 +15,7 @@ class MqttClient {
    public:
     MqttClient(
         const std::string &host, const std::uint32_t port,
-        const std::string &clientID);
+        const std::string &clientID, const std::vector<std::string> &topics);
     ~MqttClient();
 
     bool connect();
@@ -39,6 +39,7 @@ class MqttClient {
     mqtt::connect_options connectOpts;
 
     std::unordered_map<std::string, bool> topics;
-    void reconnect();
+
+    void subscribeTopics();
 };
 };  // namespace OcelotMDM::component::network

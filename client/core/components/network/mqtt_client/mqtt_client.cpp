@@ -10,18 +10,26 @@
 namespace OcelotMDM::component::network {
 MqttClient::MqttClient(
     const std::string &host, const std::uint32_t port,
-    const std::string &clientID)
+    const std::string &clientID, const std::vector<std::string> &topics)
     : client(std::format("tcp://{}:{}", host, std::to_string(port)), clientID) {
     this->connectOpts.set_clean_session(false);
     // this->connectOpts.set_automatic_reconnect(true);
 
     this->client.set_disconnected_handler(
         [this](const mqtt::properties &props, int reasonCode) {
-            this->reconnect();
+            this->connect();
         });
+
+    for (auto &item : topics) {
+        this->topics[item] = false;
+    }
 }
 
 bool MqttClient::connect() {
+    if (this->client.is_connected()) {
+        return true;
+    }
+
     auto connRes =
         this->client.connect(this->connectOpts)->wait_for(MQTT_TIMEOUT);
     if (!connRes) {
@@ -29,10 +37,15 @@ bool MqttClient::connect() {
         return false;
     }
 
+    this->subscribeTopics();
     return true;
 }
 
 bool MqttClient::subscribe(const std::string &topic, const std::uint32_t qos) {
+    if (!this->client.is_connected()) {
+        return false;
+    }
+
     auto subToken = this->client.subscribe(topic, qos);
     auto waitRes = subToken->wait_for(MQTT_TIMEOUT);
 
@@ -49,6 +62,10 @@ bool MqttClient::subscribe(const std::string &topic, const std::uint32_t qos) {
 
 bool MqttClient::publish(
     const std::string &msg, const std::string &topic, const std::uint32_t qos) {
+    if (!this->client.is_connected()) {
+        return false;
+    }
+
     auto pubToken =
         this->client.publish(topic, msg.data(), msg.size(), qos, true);
     auto waitRes = pubToken->wait_for(MQTT_TIMEOUT);
@@ -61,6 +78,10 @@ bool MqttClient::publish(
 }
 
 bool MqttClient::disconnect() {
+    if (!this->client.is_connected()) {
+        return true;
+    }
+
     auto discRes = this->client.disconnect()->wait_for(MQTT_TIMEOUT);
     if (!discRes) {
         // could not disconnect
@@ -75,13 +96,11 @@ bool MqttClient::disconnect() {
     return true;
 }
 
-void MqttClient::reconnect() {
-    auto res = this->connect();
-    if (!res) {
+void MqttClient::subscribeTopics() {
+    if (!this->client.is_connected()) {
         return;
     }
 
-    // sub to each topic again
     std::for_each(
         this->topics.begin(), this->topics.end(),
         [this](std::pair<const std::string, bool> &item) {
