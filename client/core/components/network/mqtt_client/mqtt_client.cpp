@@ -49,15 +49,8 @@ bool MqttClient::subscribe(const std::string &topic, const std::uint32_t qos) {
     auto subToken = this->client.subscribe(topic, qos);
     auto waitRes = subToken->wait_for(MQTT_TIMEOUT);
 
-    if (!waitRes) {
-        return false;
-    }
-
-    if (!this->topics.contains(topic)) {
-        this->topics[topic] = true;
-    }
-
-    return true;
+    this->topics[topic] = waitRes;
+    return waitRes;
 }
 
 bool MqttClient::publish(

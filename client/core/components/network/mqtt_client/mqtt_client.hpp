@@ -11,6 +11,7 @@
 #include <vector>
 
 namespace OcelotMDM::component::network {
+// synced implementation of paho mqtt client
 class MqttClient {
    public:
     MqttClient(
