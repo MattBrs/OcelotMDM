@@ -12,6 +12,5 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/components/network)
 
 add_executable(${PROJECT_NAME} main.cpp)
 
-target_link_libraries(
-  ${PROJECT_NAME} CURL::libcurl OcelotMDM::Component::Network::HttpClient
-  OcelotMDM::Component::Network::MqttClient msgpack-cxx)
+target_link_libraries(${PROJECT_NAME} OcelotMDM::Component::Network::HttpClient
+                      OcelotMDM::Component::Network::MqttClient msgpack-cxx)
