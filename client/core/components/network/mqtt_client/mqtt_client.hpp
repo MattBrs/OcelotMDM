@@ -3,9 +3,7 @@
 #include <mqtt/async_client.h>
 #include <mqtt/connect_options.h>
 
-#include <cstddef>
 #include <cstdint>
-#include <list>
 #include <string>
 #include <unordered_map>
 #include <vector>

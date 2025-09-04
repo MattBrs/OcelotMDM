@@ -3,11 +3,14 @@
 #include <curl/curl.h>
 #include <curl/easy.h>
 
+#include <iostream>
 #include <list>
 #include <memory>
 #include <optional>
 #include <sstream>
 #include <string>
+
+#include "http_response.hpp"
 
 namespace OcelotMDM::component::network {
 HttpClient::HttpClient(const std::string &baseUrl) {
@@ -18,6 +21,10 @@ HttpClient::HttpClient(const std::string &baseUrl) {
     curl_easy_setopt(
         this->curlHandle, CURLOPT_WRITEFUNCTION, &HttpClient::write_callback);
 };
+
+HttpClient::~HttpClient() {
+    curl_easy_cleanup(this->curlHandle);
+}
 
 httpResponse HttpClient::get(
     const std::string &path, const std::list<std::string> &header,
@@ -35,30 +42,29 @@ httpResponse HttpClient::get(
     errorBuffer[0] = 0;
 
     curl_easy_setopt(this->curlHandle, CURLOPT_HTTPGET, 1L);
+    curl_easy_setopt(this->curlHandle, CURLOPT_TIMEOUT, 15L);
     curl_easy_setopt(this->curlHandle, CURLOPT_URL, url.c_str());
     curl_easy_setopt(this->curlHandle, CURLOPT_HTTPHEADER, curlHeader);
     curl_easy_setopt(this->curlHandle, CURLOPT_ERRORBUFFER, errorBuffer);
     curl_easy_setopt(this->curlHandle, CURLOPT_FOLLOWLOCATION, url.c_str());
     curl_easy_setopt(this->curlHandle, CURLOPT_WRITEDATA, &resData);
 
-    curl_slist_free_all(curlHeader);
-
     auto res = curl_easy_perform(this->curlHandle);
 
-    std::optional<std::string> data;
-    std::optional<std::string> error;
-    int                        code = -1;
-
+    httpResponse response;
     switch (res) {
         case CURLcode::CURLE_OK:
-            data = resData.str();
-            curl_easy_getinfo(this->curlHandle, CURLINFO_RESPONSE_CODE, &code);
+            response.data = resData.str();
+            curl_easy_getinfo(
+                this->curlHandle, CURLINFO_RESPONSE_CODE, &response.statusCode);
+            break;
         default:
-            error = errorBuffer;
+            response.error = errorBuffer;
     }
 
     curl_slist_free_all(curlHeader);
-    return {data, error, code};
+
+    return response;
 }
 
 httpResponse HttpClient::post(
@@ -77,6 +83,7 @@ httpResponse HttpClient::post(
     errorBuffer[0] = 0;
 
     curl_easy_setopt(this->curlHandle, CURLOPT_POST, 1L);
+    curl_easy_setopt(this->curlHandle, CURLOPT_TIMEOUT, 15L);
     curl_easy_setopt(this->curlHandle, CURLOPT_URL, url.c_str());
     curl_easy_setopt(this->curlHandle, CURLOPT_WRITEDATA, &resData);
     curl_easy_setopt(this->curlHandle, CURLOPT_HTTPHEADER, curlHeader);
@@ -87,20 +94,18 @@ httpResponse HttpClient::post(
 
     auto res = curl_easy_perform(this->curlHandle);
 
-    std::optional<std::string> data;
-    std::optional<std::string> error;
-    int                        code = -1;
-
+    httpResponse response;
     switch (res) {
         case CURLcode::CURLE_OK:
-            data = resData.str();
-            curl_easy_getinfo(this->curlHandle, CURLINFO_RESPONSE_CODE, &code);
+            response.data = resData.str();
+            curl_easy_getinfo(
+                this->curlHandle, CURLINFO_RESPONSE_CODE, &response.statusCode);
         default:
-            error = errorBuffer;
+            response.error = errorBuffer;
     }
 
     curl_slist_free_all(curlHeader);
-    return {data, error, code};
+    return response;
 }
 
 std::string HttpClient::buildUrl(
@@ -122,6 +127,7 @@ std::string HttpClient::buildUrl(
     }
 
     completePath.append(queryParams.value());
+    std::cout << "finished building header" << std::endl;
     return completePath;
 }
 
@@ -147,7 +153,8 @@ curl_slist *HttpClient::generateHeader(const std::list<std::string> &header) {
     return curlHeader;
 }
 
-size_t write_callback(char *ptr, size_t size, size_t nmemb, void *userdata) {
+size_t HttpClient::write_callback(
+    char *ptr, size_t size, size_t nmemb, void *userdata) {
     auto               realSize = size * nmemb;
     std::stringstream *data = static_cast<std::stringstream *>(userdata);
     (*data) << ptr;

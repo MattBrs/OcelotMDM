@@ -14,6 +14,7 @@ namespace OcelotMDM::component::network {
 class HttpClient {
    public:
     explicit HttpClient(const std::string &baseUrl);
+    ~HttpClient();
 
     httpResponse get(
         const std::string &path, const std::list<std::string> &header,

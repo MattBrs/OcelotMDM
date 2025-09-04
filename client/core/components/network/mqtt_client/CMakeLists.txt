@@ -1,5 +1,7 @@
 set(LIBRARY_NAME ocelot_mqtt_client)
 
+find_package(PahoMqttCpp REQUIRED)
+
 add_library(${LIBRARY_NAME} STATIC ${CMAKE_CURRENT_SOURCE_DIR}/mqtt_client.hpp
                                    ${CMAKE_CURRENT_SOURCE_DIR}/mqtt_client.cpp)
 
