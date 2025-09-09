@@ -2,8 +2,11 @@
 
 #include <mqtt/async_client.h>
 #include <mqtt/connect_options.h>
+#include <mqtt/message.h>
 
 #include <cstdint>
+#include <functional>
+#include <queue>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -14,7 +17,8 @@ class MqttClient {
    public:
     MqttClient(
         const std::string &host, const std::uint32_t port,
-        const std::string &clientID, const std::vector<std::string> &topics);
+        const std::string              &clientID,
+        const std::vector<std::string> &topics = {});
     ~MqttClient();
 
     bool connect();
@@ -27,6 +31,8 @@ class MqttClient {
 
     bool disconnect();
 
+    void setMsgCallback(std::function<void(mqtt::const_message_ptr)>);
+
    private:
     const int MQTT_TIMEOUT = 10000;
 
@@ -37,7 +43,8 @@ class MqttClient {
     mqtt::async_client    client;
     mqtt::connect_options connectOpts;
 
-    std::unordered_map<std::string, bool> topics;
+    std::unordered_map<std::string, bool>            topics;
+    std::function<void(mqtt::const_message_ptr msg)> msgArrivedCb;
 
     void subscribeTopics();
 };

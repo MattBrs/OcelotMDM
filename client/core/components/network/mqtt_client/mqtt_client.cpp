@@ -2,9 +2,11 @@
 
 #include <mqtt/async_client.h>
 #include <mqtt/buffer_ref.h>
+#include <mqtt/message.h>
 
 #include <algorithm>
 #include <format>
+#include <iostream>
 #include <string>
 
 namespace OcelotMDM::component::network {
@@ -23,6 +25,16 @@ MqttClient::MqttClient(
     for (auto &item : topics) {
         this->topics[item] = false;
     }
+
+    this->client.set_message_callback([this](mqtt::const_message_ptr msg) {
+        if (this->msgArrivedCb != nullptr) {
+            this->msgArrivedCb(msg);
+            return;
+        }
+
+        std::cout << "message arrived on topic: " << msg->get_topic()
+                  << " but no one listened to it\n";
+    });
 }
 
 bool MqttClient::connect() {
@@ -43,6 +55,7 @@ bool MqttClient::connect() {
 
 bool MqttClient::subscribe(const std::string &topic, const std::uint32_t qos) {
     if (!this->client.is_connected()) {
+        this->topics[topic] = false;
         return false;
     }
 
@@ -108,5 +121,10 @@ MqttClient::~MqttClient() {
         });
 
     this->disconnect();
+}
+
+void MqttClient::setMsgCallback(
+    std::function<void(mqtt::const_message_ptr)> cb) {
+    this->setMsgCallback(cb);
 }
 }  // namespace OcelotMDM::component::network

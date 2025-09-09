@@ -1,5 +1,7 @@
 set(LIBRARY_NAME ocelot_http_client)
 
+find_package(CURL REQUIRED)
+
 add_library(
   ${LIBRARY_NAME} STATIC
   ${CMAKE_CURRENT_SOURCE_DIR}/http_client.hpp

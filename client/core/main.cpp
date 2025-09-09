@@ -1,21 +1,20 @@
 #include <iostream>
 
 #include "http_client.hpp"
+#include "mqtt_client.hpp"
 
 using HttpClient = OcelotMDM::component::network::HttpClient;
+using MqttClient = OcelotMDM::component::network::MqttClient;
 
 int main() {
-    HttpClient httpClient("https://httpbin.org/ip");
-    auto       res = httpClient.get("", {});
+    MqttClient mqttClient("159.89.2.75", 1883, "sugo-boy", {"sugo-boy/cmd"});
 
-    if (res.data.has_value()) {
-        std::cout << "response body: " << res.data.value();
-        std::cout << "response code: " << res.statusCode << "\n";
-        std::cout << std::flush;
-    } else if (res.error.has_value()) {
-        std::cout << "error: " << res.error.value() << "\n";
-        std::cout << std::flush;
-    }
+    std::thread mqttTh([&mqttClient]() { mqttClient.connect(); });
+    mqttTh.detach();
+
+    HttpClient httpClient("https://httpbin.org/ip");
 
     std::cout << "Hello!" << std::endl;
+
+    while (true);
 }
