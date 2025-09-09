@@ -44,7 +44,7 @@ class MqttClient {
     mqtt::connect_options connectOpts;
 
     std::unordered_map<std::string, bool>            topics;
-    std::function<void(mqtt::const_message_ptr msg)> msgArrivedCb;
+    std::function<void(mqtt::const_message_ptr msg)> msgArrivedCb = nullptr;
 
     void subscribeTopics();
 };

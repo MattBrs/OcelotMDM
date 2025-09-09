@@ -125,6 +125,6 @@ MqttClient::~MqttClient() {
 
 void MqttClient::setMsgCallback(
     std::function<void(mqtt::const_message_ptr)> cb) {
-    this->setMsgCallback(cb);
+    this->msgArrivedCb = cb;
 }
 }  // namespace OcelotMDM::component::network

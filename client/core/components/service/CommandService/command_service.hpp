@@ -3,9 +3,9 @@
 #include <mqtt/message.h>
 
 #include <cstdint>
-#include <list>
 #include <string>
 
+#include "command_model.hpp"
 #include "mqtt_client.hpp"
 
 namespace OcelotMDM::component::service {
@@ -18,6 +18,8 @@ class CommandService {
    private:
     network::MqttClient mqttClient;
 
-    void decodeCmdMsg(mqtt::const_message_ptr msg);
+    model::Command decodeCmdMsg(mqtt::const_message_ptr msg);
+
+    void onCmdArrived(mqtt::const_message_ptr);
 };
 };  // namespace OcelotMDM::component::service
