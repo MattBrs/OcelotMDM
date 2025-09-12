@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <memory>
 #include <queue>
+#include <set>
 #include <string>
 
 #include "command_dao.hpp"
@@ -22,12 +23,15 @@ class CommandService {
    private:
     std::shared_ptr<db::CommandDao> cmdDao = nullptr;
 
-    std::string                         deviceID;
     std::priority_queue<model::Command> cmdQueue;
-    network::MqttClient                 mqttClient;
+    std::set<std::string>               queuedCmds;
+
+    std::string         deviceID;
+    network::MqttClient mqttClient;
 
     model::Command decodeCmdMsg(mqtt::const_message_ptr msg);
 
     void onCmdArrived(mqtt::const_message_ptr);
+    void enqueueCommand(const model::Command &cmd);
 };
 };  // namespace OcelotMDM::component::service

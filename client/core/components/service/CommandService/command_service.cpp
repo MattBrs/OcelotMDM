@@ -26,6 +26,15 @@ CommandService::CommandService(
     : cmdDao(cmdDao),
       deviceID(deviceID),
       mqttClient(mqttIp, mqttPort, deviceID) {
+    auto queuedCommands = this->cmdDao->getQueuedCommands();
+    if (queuedCommands.has_value()) {
+        for (auto &cmd : queuedCommands.value()) {
+            std::cout << "queueing command from db: " << cmd.id << std::endl;
+            this->cmdQueue.push(cmd);
+            this->queuedCmds.emplace(cmd.id);
+        }
+    }
+
     this->mqttClient.setMsgCallback(
         std::bind(&CommandService::onCmdArrived, this, std::placeholders::_1));
 
@@ -67,10 +76,8 @@ model::Command CommandService::decodeCmdMsg(mqtt::const_message_ptr msg) {
 
     std::cout << "arrived from mqtt: " << rawData.dump() << std::endl;
     model::Command cmd{
-        .id = rawData["Id"],
-        .commandAction = rawData["MessageAction"],
-        .payload = rawData["Payload"],
-        .priority = rawData["Priority"]};
+        rawData["Id"], rawData["MessageAction"], rawData["Payload"],
+        rawData["Priority"]};
 
     return cmd;
 }
@@ -82,7 +89,20 @@ void CommandService::onCmdArrived(mqtt::const_message_ptr msg) {
     std::cout << "- " << cmd.commandAction << "\n";
     std::cout << "- " << cmd.payload << "\n";
     std::cout << "- " << cmd.priority << "\n" << std::flush;
+
+    this->enqueueCommand(cmd);
+}
+
+void CommandService::enqueueCommand(const model::Command &cmd) {
+    if (this->queuedCmds.contains(cmd.id)) {
+        // command is already queued
+        std::cout << "cmd arrived but already in queue, skipping: " << cmd.id
+                  << std::endl;
+        return;
+    }
+
     this->cmdQueue.push(cmd);
+    this->queuedCmds.emplace(cmd.id);
 
     auto ackRes = nlohmann::json();
     ackRes["Id"] = cmd.id;

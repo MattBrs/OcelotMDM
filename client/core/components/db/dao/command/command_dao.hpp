@@ -2,6 +2,7 @@
 
 #include <sqlite3.h>
 
+#include <list>
 #include <memory>
 #include <optional>
 #include <string>
@@ -15,6 +16,7 @@ class CommandDao {
     explicit CommandDao(const std::shared_ptr<sqlite3> &dbConn);
 
     std::optional<bool> enqueueCommand(const model::Command &cmd);
+    std::optional<std::list<model::Command>> getQueuedCommands();
 
     std::string getError();
 
