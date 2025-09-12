@@ -54,7 +54,6 @@ std::optional<bool> CommandDao::enqueueCommand(const model::Command &cmd) {
 
     if (ret != SQLITE_DONE && ret != SQLITE_OK) {
         this->error = sqlite3_errstr(ret);
-        std::cout << "error: " << this->error << std::endl;
         return false;
     }
 
@@ -99,6 +98,39 @@ std::optional<std::list<model::Command>> CommandDao::getQueuedCommands() {
     }
 
     return cmdList;
+}
+
+std::optional<bool> CommandDao::dequeCommand(const std::string &id) {
+    if (this->dbConn == nullptr) {
+        this->error = "db conn is not initialized";
+        return std::nullopt;
+    }
+
+    std::string query("update commands set queued = 0 where value = ?");
+
+    sqlite3_stmt *stmt;
+    int           ret;
+
+    ret = sqlite3_prepare_v2(
+        this->dbConn.get(), query.c_str(), -1, &stmt, nullptr);
+
+    if (ret != SQLITE_OK) {
+        this->error = sqlite3_errstr(ret);
+        return std::nullopt;
+    }
+
+    sqlite3_bind_text(stmt, 1, id.c_str(), id.size(), SQLITE_STATIC);
+
+    sqlite3_step(stmt);
+
+    ret = sqlite3_finalize(stmt);
+
+    if (ret != SQLITE_DONE && ret != SQLITE_OK) {
+        this->error = sqlite3_errstr(ret);
+        return false;
+    }
+
+    return true;
 }
 
 std::string CommandDao::getError() {

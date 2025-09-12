@@ -17,6 +17,7 @@ class CommandDao {
 
     std::optional<bool> enqueueCommand(const model::Command &cmd);
     std::optional<std::list<model::Command>> getQueuedCommands();
+    std::optional<bool> dequeCommand(const std::string &id);
 
     std::string getError();
 

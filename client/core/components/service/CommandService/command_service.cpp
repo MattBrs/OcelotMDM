@@ -2,16 +2,19 @@
 
 #include <mqtt/message.h>
 
+#include <chrono>
 #include <cstdint>
 #include <functional>
 #include <iomanip>
 #include <ios>
 #include <list>
 #include <memory>
+#include <mutex>
 #include <nlohmann/json_fwd.hpp>
 #include <ostream>
 #include <sstream>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include "command_dao.hpp"
@@ -40,6 +43,37 @@ CommandService::CommandService(
 
     this->mqttClient.connect();
     mqttClient.subscribe(deviceID + "/cmd", 1);
+
+    this->shouldStopTh.store(false);
+    this->queueTh = std::thread(&CommandService::queueWorker, this);
+}
+
+CommandService::~CommandService() {
+    this->shouldStopTh.store(true);
+    this->queueCv.notify_one();
+
+    if (this->queueTh.joinable()) {
+        this->queueTh.join();
+    }
+}
+
+void CommandService::queueWorker() {
+    while (!this->shouldStopTh.load()) {
+        if (this->cmdQueue.size() > 0) {
+            auto cmd = this->cmdQueue.top();
+            this->cmdQueue.pop();
+
+            std::cout << "shound run command: " << cmd.commandAction
+                      << std::endl;
+
+            this->cmdDao->dequeCommand(cmd.id);
+        }
+
+        std::unique_lock<std::mutex> lock(this->queueMtx);
+        this->queueCv.wait_for(
+            lock, std::chrono::milliseconds(DEQUEUE_INTR),
+            [this]() { return this->shouldStopTh.load(); });
+    }
 }
 
 std::vector<std::uint8_t> hexToBytes(const std::string &hex) {
@@ -101,6 +135,16 @@ void CommandService::enqueueCommand(const model::Command &cmd) {
         return;
     }
 
+    auto insertRes = this->cmdDao->enqueueCommand(cmd);
+    if ((insertRes.has_value() && !insertRes) || !insertRes.has_value()) {
+        // could not add command to the local DB. not safe to keep only in
+        // memory
+        // Should return errored to the backend?
+        std::cout << "could not insert cmd on db. abort. "
+                  << this->cmdDao->getError() << std::endl;
+        return;
+    }
+
     this->cmdQueue.push(cmd);
     this->queuedCmds.emplace(cmd.id);
 
@@ -113,7 +157,5 @@ void CommandService::enqueueCommand(const model::Command &cmd) {
 
     std::cout << "about to pub" << std::endl;
     auto pubRes = this->mqttClient.publish(encoded, this->deviceID + "/ack", 1);
-
-    this->cmdDao->enqueueCommand(cmd);
 }
 }  // namespace OcelotMDM::component::service
