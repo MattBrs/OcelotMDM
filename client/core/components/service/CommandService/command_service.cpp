@@ -4,21 +4,28 @@
 
 #include <cstdint>
 #include <functional>
+#include <iomanip>
+#include <ios>
 #include <list>
+#include <memory>
 #include <nlohmann/json_fwd.hpp>
 #include <ostream>
+#include <sstream>
 #include <string>
 #include <vector>
 
+#include "command_dao.hpp"
 #include "command_model.hpp"
 #include "mqtt_client.hpp"
 #include "nlohmann/json.hpp"
 
 namespace OcelotMDM::component::service {
 CommandService::CommandService(
-    const std::string &mqttIp, const std::uint32_t mqttPort,
-    const std::string &deviceID)
-    : mqttClient(mqttIp, mqttPort, deviceID) {
+    const std::shared_ptr<db::CommandDao> &cmdDao, const std::string &mqttIp,
+    const std::uint32_t mqttPort, const std::string &deviceID)
+    : cmdDao(cmdDao),
+      deviceID(deviceID),
+      mqttClient(mqttIp, mqttPort, deviceID) {
     this->mqttClient.setMsgCallback(
         std::bind(&CommandService::onCmdArrived, this, std::placeholders::_1));
 
@@ -41,6 +48,20 @@ std::vector<std::uint8_t> hexToBytes(const std::string &hex) {
     return bytes;
 }
 
+std::string bytesToHex(const std::vector<std::uint8_t> &bytes) {
+    std::stringstream ss;
+    auto              start = bytes.begin();
+    auto              end = bytes.end();
+
+    ss << std::hex << std::setw(2) << std::setfill('0');
+
+    while (start != end) {
+        ss << static_cast<unsigned>(*start++);
+    }
+
+    return ss.str();
+}
+
 model::Command CommandService::decodeCmdMsg(mqtt::const_message_ptr msg) {
     auto rawData = nlohmann::json::from_msgpack(hexToBytes(msg->to_string()));
 
@@ -61,7 +82,18 @@ void CommandService::onCmdArrived(mqtt::const_message_ptr msg) {
     std::cout << "- " << cmd.commandAction << "\n";
     std::cout << "- " << cmd.payload << "\n";
     std::cout << "- " << cmd.priority << "\n" << std::flush;
+    this->cmdQueue.push(cmd);
 
-    // todo: send ack to backend
+    auto ackRes = nlohmann::json();
+    ackRes["Id"] = cmd.id;
+    ackRes["State"] = "acknowledged";
+    ackRes["errorMsg"] = "";
+
+    auto encoded = bytesToHex(nlohmann::json::to_msgpack(ackRes));
+
+    std::cout << "about to pub" << std::endl;
+    auto pubRes = this->mqttClient.publish(encoded, this->deviceID + "/ack", 1);
+
+    this->cmdDao->enqueueCommand(cmd);
 }
 }  // namespace OcelotMDM::component::service

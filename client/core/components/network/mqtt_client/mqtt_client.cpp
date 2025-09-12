@@ -68,17 +68,11 @@ bool MqttClient::subscribe(const std::string &topic, const std::uint32_t qos) {
 
 bool MqttClient::publish(
     const std::string &msg, const std::string &topic, const std::uint32_t qos) {
-    if (!this->client.is_connected()) {
-        return false;
-    }
-
     auto pubToken =
-        this->client.publish(topic, msg.data(), msg.size(), qos, true);
-    auto waitRes = pubToken->wait_for(MQTT_TIMEOUT);
+        this->client.publish(topic, msg.data(), msg.size(), qos, false);
+    pubToken->try_wait();
 
-    if (!waitRes) {
-        return false;
-    }
+    std::cout << "published on topic:" << topic << std::endl;
 
     return true;
 }
