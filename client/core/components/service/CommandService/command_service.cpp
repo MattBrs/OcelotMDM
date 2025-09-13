@@ -62,9 +62,10 @@ void CommandService::queueWorker() {
         if (this->cmdQueue.size() > 0) {
             auto cmd = this->cmdQueue.top();
             this->cmdQueue.pop();
+            this->queuedCmds.erase(cmd.id);
 
             std::cout << "shound run command: " << cmd.commandAction
-                      << std::endl;
+                      << " with id: " << cmd.id << std::endl;
 
             this->cmdDao->dequeCommand(cmd.id);
         }
@@ -118,30 +119,23 @@ model::Command CommandService::decodeCmdMsg(mqtt::const_message_ptr msg) {
 
 void CommandService::onCmdArrived(mqtt::const_message_ptr msg) {
     auto cmd = this->decodeCmdMsg(msg);
-    std::cout << "arrived cmd: \n";
-    std::cout << "- " << cmd.id << "\n";
-    std::cout << "- " << cmd.commandAction << "\n";
-    std::cout << "- " << cmd.payload << "\n";
-    std::cout << "- " << cmd.priority << "\n" << std::flush;
+    std::cout << "arrived cmd: " << cmd.id << "\n" << std::flush;
 
     this->enqueueCommand(cmd);
 }
 
 void CommandService::enqueueCommand(const model::Command &cmd) {
     if (this->queuedCmds.contains(cmd.id)) {
-        // command is already queued
-        std::cout << "cmd arrived but already in queue, skipping: " << cmd.id
-                  << std::endl;
         return;
     }
 
     auto insertRes = this->cmdDao->enqueueCommand(cmd);
-    if ((insertRes.has_value() && !insertRes) || !insertRes.has_value()) {
-        // could not add command to the local DB. not safe to keep only in
-        // memory
+    if (!insertRes.has_value()) {
+        return;
+    }
+
+    if (!insertRes.value()) {
         // Should return errored to the backend?
-        std::cout << "could not insert cmd on db. abort. "
-                  << this->cmdDao->getError() << std::endl;
         return;
     }
 
@@ -154,8 +148,6 @@ void CommandService::enqueueCommand(const model::Command &cmd) {
     ackRes["errorMsg"] = "";
 
     auto encoded = bytesToHex(nlohmann::json::to_msgpack(ackRes));
-
-    std::cout << "about to pub" << std::endl;
     auto pubRes = this->mqttClient.publish(encoded, this->deviceID + "/ack", 1);
 }
 }  // namespace OcelotMDM::component::service

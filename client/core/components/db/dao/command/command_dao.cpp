@@ -54,6 +54,10 @@ std::optional<bool> CommandDao::enqueueCommand(const model::Command &cmd) {
 
     if (ret != SQLITE_DONE && ret != SQLITE_OK) {
         this->error = sqlite3_errstr(ret);
+        if (ret == SQLITE_CONSTRAINT) {
+            return std::nullopt;
+        }
+
         return false;
     }
 
