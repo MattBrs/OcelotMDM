@@ -23,6 +23,7 @@ class CommandService {
         const std::shared_ptr<db::CommandDao> &cmdDao,
         const std::string &mqttIp, const std::uint32_t port,
         const std::string &deviceID);
+
     ~CommandService();
 
    private:
@@ -30,11 +31,10 @@ class CommandService {
 
     std::shared_ptr<db::CommandDao> cmdDao = nullptr;
 
+    std::string                         deviceID;
     std::priority_queue<model::Command> cmdQueue;
+    network::MqttClient                 mqttClient;
     std::set<std::string>               queuedCmds;
-
-    std::string         deviceID;
-    network::MqttClient mqttClient;
 
     std::thread             queueTh;
     std::condition_variable queueCv;

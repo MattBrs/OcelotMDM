@@ -19,6 +19,7 @@ class MqttClient {
         const std::string &host, const std::uint32_t port,
         const std::string              &clientID,
         const std::vector<std::string> &topics = {});
+
     ~MqttClient();
 
     bool connect();

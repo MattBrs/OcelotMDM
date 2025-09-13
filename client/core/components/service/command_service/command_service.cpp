@@ -28,7 +28,7 @@ CommandService::CommandService(
     const std::uint32_t mqttPort, const std::string &deviceID)
     : cmdDao(cmdDao),
       deviceID(deviceID),
-      mqttClient(mqttIp, mqttPort, deviceID) {
+      mqttClient(mqttIp, mqttPort, deviceID + "_cmd") {
     auto queuedCommands = this->cmdDao->getQueuedCommands();
     if (queuedCommands.has_value()) {
         for (auto &cmd : queuedCommands.value()) {

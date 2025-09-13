@@ -29,4 +29,5 @@ target_link_libraries(
   OcelotMDM::Component::Network::HttpClient
   OcelotMDM::Component::Network::MqttClient
   OcelotMDM::Component::Service::CommandService
+  OcelotMDM::Component::Service::UptimeService
   OcelotMDM::Component::Db::Client)

@@ -181,6 +181,7 @@ func initMqttClient(deviceService *device.Service) *ocelot_mqtt.MqttClient {
 		deviceName := devices[i].Name
 
 		_ = mqttClient.Subscribe(deviceName+"/ack", 1)
+		_ = mqttClient.Subscribe(deviceName+"/online", 1)
 	}
 
 	return mqttClient
