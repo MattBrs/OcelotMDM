@@ -43,8 +43,9 @@ class CommandService {
 
     model::Command decodeCmdMsg(mqtt::const_message_ptr msg);
 
-    void onCmdArrived(mqtt::const_message_ptr);
-    void enqueueCommand(const model::Command &cmd);
-    void queueWorker();
+    void        onCmdArrived(mqtt::const_message_ptr);
+    void        enqueueCommand(model::Command &cmd);
+    void        queueWorker();
+    std::string encodeCmd(const model::Command &cmd);
 };
 };  // namespace OcelotMDM::component::service

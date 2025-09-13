@@ -39,13 +39,15 @@ std::optional<bool> CommandDao::enqueueCommand(const model::Command &cmd) {
         return std::nullopt;
     }
 
-    sqlite3_bind_text(stmt, 1, cmd.id.c_str(), cmd.id.size(), SQLITE_STATIC);
-    sqlite3_bind_text(
-        stmt, 2, cmd.commandAction.c_str(), cmd.commandAction.size(),
-        SQLITE_STATIC);
-    sqlite3_bind_text(
-        stmt, 3, cmd.payload.c_str(), cmd.payload.size(), SQLITE_STATIC);
-    sqlite3_bind_int(stmt, 4, cmd.priority);
+    auto id = cmd.getId();
+    auto action = cmd.getAction();
+    auto payload = cmd.getPayload();
+    auto priority = cmd.getPriority();
+
+    sqlite3_bind_text(stmt, 1, id.c_str(), id.size(), SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, action.c_str(), action.size(), SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 3, payload.c_str(), payload.size(), SQLITE_STATIC);
+    sqlite3_bind_int(stmt, 4, priority);
     sqlite3_bind_int(stmt, 5, true);
 
     sqlite3_step(stmt);

@@ -32,9 +32,10 @@ CommandService::CommandService(
     auto queuedCommands = this->cmdDao->getQueuedCommands();
     if (queuedCommands.has_value()) {
         for (auto &cmd : queuedCommands.value()) {
-            std::cout << "queueing command from db: " << cmd.id << std::endl;
+            std::cout << "queueing command from db: " << cmd.getId()
+                      << std::endl;
             this->cmdQueue.push(cmd);
-            this->queuedCmds.emplace(cmd.id);
+            this->queuedCmds.emplace(cmd.getId());
         }
     }
 
@@ -62,12 +63,12 @@ void CommandService::queueWorker() {
         if (this->cmdQueue.size() > 0) {
             auto cmd = this->cmdQueue.top();
             this->cmdQueue.pop();
-            this->queuedCmds.erase(cmd.id);
+            this->queuedCmds.erase(cmd.getId());
 
-            std::cout << "shound run command: " << cmd.commandAction
-                      << " with id: " << cmd.id << std::endl;
-
-            this->cmdDao->dequeCommand(cmd.id);
+            std::cout << "shound run command: " << cmd.getAction()
+                      << " with id: " << cmd.getId() << std::endl;
+            
+            this->cmdDao->dequeCommand(cmd.getId());
         }
 
         std::unique_lock<std::mutex> lock(this->queueMtx);
@@ -119,13 +120,13 @@ model::Command CommandService::decodeCmdMsg(mqtt::const_message_ptr msg) {
 
 void CommandService::onCmdArrived(mqtt::const_message_ptr msg) {
     auto cmd = this->decodeCmdMsg(msg);
-    std::cout << "arrived cmd: " << cmd.id << "\n" << std::flush;
+    std::cout << "arrived cmd: " << cmd.getId() << "\n" << std::flush;
 
     this->enqueueCommand(cmd);
 }
 
-void CommandService::enqueueCommand(const model::Command &cmd) {
-    if (this->queuedCmds.contains(cmd.id)) {
+void CommandService::enqueueCommand(model::Command &cmd) {
+    if (this->queuedCmds.contains(cmd.getId())) {
         return;
     }
 
@@ -134,20 +135,25 @@ void CommandService::enqueueCommand(const model::Command &cmd) {
         return;
     }
 
-    if (!insertRes.value()) {
-        // Should return errored to the backend?
-        return;
+    if (insertRes.value()) {
+        this->cmdQueue.push(cmd);
+        this->queuedCmds.emplace(cmd.getId());
+    } else {
+        std::cout << "errored on command insert" << std::endl;
+        cmd.setStatus(model::Command::CommandStatus::Errored);
+        cmd.setError(this->cmdDao->getError().c_str());
     }
 
-    this->cmdQueue.push(cmd);
-    this->queuedCmds.emplace(cmd.id);
+    auto encoded = this->encodeCmd(cmd);
+    this->mqttClient.publish(encoded, this->deviceID + "/ack", 1);
+}
 
+std::string CommandService::encodeCmd(const model::Command &cmd) {
     auto ackRes = nlohmann::json();
-    ackRes["Id"] = cmd.id;
-    ackRes["State"] = "acknowledged";
-    ackRes["errorMsg"] = "";
+    ackRes["Id"] = cmd.getId();
+    ackRes["State"] = cmd.getStatus();
+    ackRes["errorMsg"] = cmd.getError();
 
-    auto encoded = bytesToHex(nlohmann::json::to_msgpack(ackRes));
-    auto pubRes = this->mqttClient.publish(encoded, this->deviceID + "/ack", 1);
+    return bytesToHex(nlohmann::json::to_msgpack(ackRes));
 }
 }  // namespace OcelotMDM::component::service
