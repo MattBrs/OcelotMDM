@@ -49,4 +49,5 @@ type Command struct {
 	RequestedBy       string             `bson:"requested_by"`
 	ErrorDescription  string             `bson:"error_desc,omitempty"`
 	QueueID           primitive.ObjectID `bson:"queue_id,omitempty"`
+	RequiredOnline    bool               `bson:"required_online,omitempty"`
 }

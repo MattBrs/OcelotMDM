@@ -11,14 +11,9 @@ class Command {
     Command(
         const std::string &_id, const std::string &_action,
         const std::string &_payload, const std::uint32_t _priority,
+        const bool          _onlineRequired,
         const CommandStatus _status = CommandStatus::Acknowledged,
-        const std::string  &_error = "")
-        : id(_id),
-          commandAction(_action),
-          payload(_payload),
-          priority(_priority),
-          status(_status),
-          errorMsg(_error) {}
+        const std::string  &_error = "");
 
     bool operator<(const Command &other) const;
 
@@ -28,6 +23,7 @@ class Command {
     std::uint32_t getPriority() const;
     std::string   getStatus() const;
     std::string   getError() const;
+    bool          isOnlineRequired() const;
 
     void setStatus(const CommandStatus status);
     void setError(const std::string &error);
@@ -39,6 +35,7 @@ class Command {
     std::uint32_t priority;
     CommandStatus status;
     std::string   errorMsg;
+    bool          requireOnline;
 };
 
 };  // namespace OcelotMDM::component::model

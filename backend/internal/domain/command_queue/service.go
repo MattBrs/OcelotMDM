@@ -133,6 +133,7 @@ func onFetch(s *CommandQueueService) {
 			commands[i].CommandActionName,
 			commands[i].Payload,
 			commands[i].Priority,
+			commands[i].RequiredOnline,
 		)
 		if err != nil {
 			fmt.Println("could not encode command: ", err.Error())
@@ -187,19 +188,22 @@ func encodeCommandMessage(
 	messageAction string,
 	payload string,
 	priority uint,
+	reqiuredOnline bool,
 ) (string, error) {
 	type packed struct {
-		Id            string
-		MessageAction string
-		Payload       string
-		Priority      uint
+		Id             string
+		MessageAction  string
+		Payload        string
+		Priority       uint
+		ReqiuredOnline bool
 	}
 
 	b, err := msgpack.Marshal(&packed{
-		Id:            id,
-		MessageAction: messageAction,
-		Payload:       payload,
-		Priority:      priority,
+		Id:             id,
+		MessageAction:  messageAction,
+		Payload:        payload,
+		Priority:       priority,
+		ReqiuredOnline: reqiuredOnline,
 	})
 	if err != nil {
 		return "", err

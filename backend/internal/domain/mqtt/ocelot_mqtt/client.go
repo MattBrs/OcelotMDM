@@ -48,6 +48,7 @@ func demuxChannels(client *MqttClient) {
 			}
 			copy(fwMsg.Payload, msg.Payload())
 
+			fmt.Println("arrived a message on topic: ", msg.Topic())
 			if strings.Contains(msg.Topic(), "ack") {
 				tryEnqueue(client.AckMessages, fwMsg, "ack")
 			} else if strings.Contains(msg.Topic(), "logs") {
@@ -83,6 +84,7 @@ func (client *MqttClient) Close() {
 }
 
 func (client *MqttClient) Subscribe(topic string, qos byte) error {
+	fmt.Println("subbing to topic: ", topic)
 	return client.pahoClient.Subscribe(topic, qos)
 }
 

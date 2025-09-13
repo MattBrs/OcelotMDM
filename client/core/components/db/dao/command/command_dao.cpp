@@ -25,8 +25,8 @@ std::optional<bool> CommandDao::enqueueCommand(const model::Command &cmd) {
     }
 
     std::string query(
-        "INSERT INTO COMMANDS (value, action, payload, priority, queued) "
-        "values (?, ?, ?, ?, ?);");
+        "INSERT INTO COMMANDS (value, action, payload, priority, queued, "
+        "reqire_online) values (?, ?, ?, ?, ?, ?);");
 
     sqlite3_stmt *stmt;
     int           ret;
@@ -43,12 +43,14 @@ std::optional<bool> CommandDao::enqueueCommand(const model::Command &cmd) {
     auto action = cmd.getAction();
     auto payload = cmd.getPayload();
     auto priority = cmd.getPriority();
+    auto requireOnline = cmd.isOnlineRequired();
 
     sqlite3_bind_text(stmt, 1, id.c_str(), id.size(), SQLITE_STATIC);
     sqlite3_bind_text(stmt, 2, action.c_str(), action.size(), SQLITE_STATIC);
     sqlite3_bind_text(stmt, 3, payload.c_str(), payload.size(), SQLITE_STATIC);
     sqlite3_bind_int(stmt, 4, priority);
     sqlite3_bind_int(stmt, 5, true);
+    sqlite3_bind_int(stmt, 6, requireOnline);
 
     sqlite3_step(stmt);
 
@@ -93,8 +95,9 @@ std::optional<std::list<model::Command>> CommandDao::getQueuedCommands() {
         auto payload =
             reinterpret_cast<const char *>(sqlite3_column_text(stmt, 3));
         auto priority = static_cast<std::uint32_t>(sqlite3_column_int(stmt, 4));
+        bool requireOnline = sqlite3_column_int(stmt, 5);
 
-        cmdList.emplace_back(id, action, payload, priority);
+        cmdList.emplace_back(id, action, payload, priority, requireOnline);
     }
 
     sqlite3_finalize(stmt);

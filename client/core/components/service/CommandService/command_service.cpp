@@ -67,7 +67,7 @@ void CommandService::queueWorker() {
 
             std::cout << "shound run command: " << cmd.getAction()
                       << " with id: " << cmd.getId() << std::endl;
-            
+
             this->cmdDao->dequeCommand(cmd.getId());
         }
 
@@ -110,10 +110,9 @@ std::string bytesToHex(const std::vector<std::uint8_t> &bytes) {
 model::Command CommandService::decodeCmdMsg(mqtt::const_message_ptr msg) {
     auto rawData = nlohmann::json::from_msgpack(hexToBytes(msg->to_string()));
 
-    std::cout << "arrived from mqtt: " << rawData.dump() << std::endl;
     model::Command cmd{
         rawData["Id"], rawData["MessageAction"], rawData["Payload"],
-        rawData["Priority"]};
+        rawData["Priority"], rawData["ReqiuredOnline"]};
 
     return cmd;
 }

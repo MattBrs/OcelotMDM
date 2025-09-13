@@ -19,7 +19,8 @@ class Migration1 : public BaseMigration {
         action CHAR(200) NOT NULL,
         payload char(500) NOT NULL,
         priority INTEGER NOT NULL,
-        queued INTEGER NOT NULL default 1
+        queued INTEGER NOT NULL default 1,
+        require_online INTEGER NOT NULL default 0
     );
 
     PRAGMA user_version = 1;)";

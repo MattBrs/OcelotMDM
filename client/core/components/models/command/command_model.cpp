@@ -1,6 +1,19 @@
 #include "command_model.hpp"
 
 namespace OcelotMDM::component::model {
+Command::Command(
+    const std::string &_id, const std::string &_action,
+    const std::string &_payload, const std::uint32_t _priority,
+    const bool _onlineRequired, const CommandStatus _status,
+    const std::string &_error)
+    : id(_id),
+      commandAction(_action),
+      payload(_payload),
+      priority(_priority),
+      status(_status),
+      errorMsg(_error),
+      requireOnline(_onlineRequired) {}
+
 std::string Command::getId() const {
     return this->id;
 }
@@ -32,6 +45,10 @@ std::string Command::getStatus() const {
 
 std::string Command::getError() const {
     return this->errorMsg;
+}
+
+bool Command::isOnlineRequired() const {
+    return this->requireOnline;
 }
 
 void Command::setStatus(const CommandStatus status) {
