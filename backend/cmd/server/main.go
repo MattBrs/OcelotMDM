@@ -257,7 +257,7 @@ func main() {
 
 	defer commandQueueService.Stop()
 
-	err = router.Run(":8080") // will expose this later with nginx
+	err = router.Run(":8080")
 	if err != nil {
 		panic(err)
 	}

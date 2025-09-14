@@ -17,10 +17,11 @@ find_package(SQLite3 REQUIRED)
 find_package(CURL REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
+add_subdirectory(${CMAKE_SOURCE_DIR}/components/db)
+add_subdirectory(${CMAKE_SOURCE_DIR}/components/logger)
 add_subdirectory(${CMAKE_SOURCE_DIR}/components/models)
 add_subdirectory(${CMAKE_SOURCE_DIR}/components/network)
 add_subdirectory(${CMAKE_SOURCE_DIR}/components/service)
-add_subdirectory(${CMAKE_SOURCE_DIR}/components/db)
 add_subdirectory(${CMAKE_SOURCE_DIR}/components/commands_impl)
 
 add_executable(${PROJECT_NAME} main.cpp)

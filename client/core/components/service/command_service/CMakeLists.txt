@@ -11,6 +11,7 @@ target_link_libraries(
          OcelotMDM::Component::Model::Command
          nlohmann_json::nlohmann_json
          OcelotMDM::Component::Db::Dao::Command
-         OcelotMDM::Component::CommandsImpl)
+         OcelotMDM::Component::CommandsImpl
+         OcelotMDM::Component::Logger)
 
 add_library(OcelotMDM::Component::Service::CommandService ALIAS ${LIBRARY_NAME})

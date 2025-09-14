@@ -21,6 +21,7 @@
 #include "command_dao.hpp"
 #include "command_model.hpp"
 #include "commands_impl.hpp"
+#include "logger.hpp"
 #include "mqtt_client.hpp"
 #include "nlohmann/json.hpp"
 
@@ -34,8 +35,8 @@ CommandService::CommandService(
     auto queuedCommands = this->cmdDao->getQueuedCommands();
     if (queuedCommands.has_value()) {
         for (auto &cmd : queuedCommands.value()) {
-            std::cout << "queueing command from db: " << cmd.getId()
-                      << std::endl;
+            Logger::getInstance().put(
+                "queueing command from db: " + cmd.getId());
             this->cmdQueue.push(cmd);
             this->queuedCmds.emplace(cmd.getId());
         }
@@ -66,7 +67,6 @@ void CommandService::queueWorker() {
             auto cmd = this->cmdQueue.top();
             this->cmdQueue.pop();
             this->queuedCmds.erase(cmd.getId());
-            std::cout << "sucaaa" << std::endl;
             auto execRes = this->executeCommand(cmd);
 
             if (!execRes.has_value()) {
@@ -134,7 +134,6 @@ model::Command CommandService::decodeCmdMsg(mqtt::const_message_ptr msg) {
 
 void CommandService::onCmdArrived(mqtt::const_message_ptr msg) {
     auto cmd = this->decodeCmdMsg(msg);
-    std::cout << "arrived cmd: " << cmd.getId() << "\n" << std::flush;
 
     this->enqueueCommand(cmd);
 }
@@ -153,7 +152,7 @@ void CommandService::enqueueCommand(model::Command &cmd) {
         this->cmdQueue.push(cmd);
         this->queuedCmds.emplace(cmd.getId());
     } else {
-        std::cout << "errored on command insert" << std::endl;
+        Logger::getInstance().putError("errored on command insert");
         cmd.setStatus(model::Command::CommandStatus::Errored);
         cmd.setError(this->cmdDao->getError().c_str());
     }
@@ -173,7 +172,7 @@ std::string CommandService::encodeCmd(const model::Command &cmd) {
 
 std::optional<CommandImpl::ExecutionResult> CommandService::executeCommand(
     const model::Command &cmd) {
-    std::cout << "command action: " << cmd.getAction() << std::endl;
+    Logger::getInstance().put("command action " + cmd.getAction());
 
     if (cmd.getAction().compare("install_binary") == 0) {
         auto res = CommandImpl::installBinary(nullptr, cmd.getPayload());
