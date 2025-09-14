@@ -14,6 +14,7 @@
 
 #include "command_dao.hpp"
 #include "command_model.hpp"
+#include "commands_impl.hpp"
 #include "mqtt_client.hpp"
 
 namespace OcelotMDM::component::service {
@@ -47,5 +48,7 @@ class CommandService {
     void        enqueueCommand(model::Command &cmd);
     void        queueWorker();
     std::string encodeCmd(const model::Command &cmd);
+    std::optional<CommandImpl::ExecutionResult> executeCommand(
+        const model::Command &cmd);
 };
 };  // namespace OcelotMDM::component::service

@@ -26,7 +26,7 @@ std::optional<bool> CommandDao::enqueueCommand(const model::Command &cmd) {
 
     std::string query(
         "INSERT INTO COMMANDS (value, action, payload, priority, queued, "
-        "reqire_online) values (?, ?, ?, ?, ?, ?);");
+        "require_online) values (?, ?, ?, ?, ?, ?);");
 
     sqlite3_stmt *stmt;
     int           ret;

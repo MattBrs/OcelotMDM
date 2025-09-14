@@ -11,6 +11,7 @@
 #include <memory>
 #include <mutex>
 #include <nlohmann/json_fwd.hpp>
+#include <optional>
 #include <ostream>
 #include <sstream>
 #include <string>
@@ -19,6 +20,7 @@
 
 #include "command_dao.hpp"
 #include "command_model.hpp"
+#include "commands_impl.hpp"
 #include "mqtt_client.hpp"
 #include "nlohmann/json.hpp"
 
@@ -64,9 +66,22 @@ void CommandService::queueWorker() {
             auto cmd = this->cmdQueue.top();
             this->cmdQueue.pop();
             this->queuedCmds.erase(cmd.getId());
+            std::cout << "sucaaa" << std::endl;
+            auto execRes = this->executeCommand(cmd);
 
-            std::cout << "shound run command: " << cmd.getAction()
-                      << " with id: " << cmd.getId() << std::endl;
+            if (!execRes.has_value()) {
+                cmd.setError("command not supported");
+                cmd.setStatus(model::Command::CommandStatus::Errored);
+            } else if (!execRes.value().successful) {
+                cmd.setError(execRes.value().props.error);
+                cmd.setStatus(model::Command::CommandStatus::Errored);
+            } else {
+                cmd.setError("");
+                cmd.setStatus(model::Command::CommandStatus::Completed);
+            }
+
+            auto encoded = this->encodeCmd(cmd);
+            this->mqttClient.publish(encoded, this->deviceID + "/ack", 1);
 
             this->cmdDao->dequeCommand(cmd.getId());
         }
@@ -154,5 +169,22 @@ std::string CommandService::encodeCmd(const model::Command &cmd) {
     ackRes["errorMsg"] = cmd.getError();
 
     return bytesToHex(nlohmann::json::to_msgpack(ackRes));
+}
+
+std::optional<CommandImpl::ExecutionResult> CommandService::executeCommand(
+    const model::Command &cmd) {
+    std::cout << "command action: " << cmd.getAction() << std::endl;
+
+    if (cmd.getAction().compare("install_binary") == 0) {
+        auto res = CommandImpl::installBinary(nullptr, cmd.getPayload());
+        return res;
+    }
+
+    if (cmd.getAction().compare("send_logs") == 0) {
+        auto res = CommandImpl::sendLogs(&this->mqttClient);
+        return res;
+    }
+
+    return std::nullopt;
 }
 }  // namespace OcelotMDM::component::service
