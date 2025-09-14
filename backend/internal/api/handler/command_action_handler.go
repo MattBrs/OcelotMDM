@@ -27,7 +27,7 @@ func (handler *CommandActionHandler) AddNewCommandAction(ctx *gin.Context) {
 		ctx.JSON(
 			http.StatusBadRequest,
 			command_action_dto.ResponseErr{
-				Error: "could not parse json",
+				Error: err.Error(),
 			},
 		)
 		return
@@ -36,9 +36,9 @@ func (handler *CommandActionHandler) AddNewCommandAction(ctx *gin.Context) {
 	cmdAct := command_action.CommandAction{
 		Name:            req.Name,
 		Description:     req.Description,
-		RequiredOnlne:   req.RequiredOnline,
+		RequiredOnlne:   *req.RequiredOnline,
 		DefaultPriority: req.DefaultPriority,
-		PayloadRequired: req.PayloadRequired,
+		PayloadRequired: *req.PayloadRequired,
 	}
 
 	id, err := handler.service.AddCommandAction(ctx, &cmdAct)
