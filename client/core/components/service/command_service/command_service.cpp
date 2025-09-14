@@ -166,7 +166,7 @@ std::string CommandService::encodeCmd(const model::Command &cmd) {
     auto ackRes = nlohmann::json();
     ackRes["Id"] = cmd.getId();
     ackRes["State"] = cmd.getStatus();
-    ackRes["errorMsg"] = cmd.getError();
+    ackRes["ErrorMsg"] = cmd.getError();
 
     return bytesToHex(nlohmann::json::to_msgpack(ackRes));
 }

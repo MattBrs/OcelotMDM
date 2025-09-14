@@ -218,7 +218,7 @@ func decodeAckMessage(
 	type unpacked struct {
 		Id       string
 		State    string
-		errorMsg string
+		ErrorMsg string
 	}
 
 	data, err := hex.DecodeString(hexData)
@@ -239,5 +239,5 @@ func decodeAckMessage(
 		return nil, nil, nil, fmt.Errorf("state not found: %s", msg.State)
 	}
 
-	return &msg.Id, state, &msg.errorMsg, nil
+	return &msg.Id, state, &msg.ErrorMsg, nil
 }
