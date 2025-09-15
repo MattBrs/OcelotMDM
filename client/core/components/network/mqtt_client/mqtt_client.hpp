@@ -4,10 +4,14 @@
 #include <mqtt/connect_options.h>
 #include <mqtt/message.h>
 
+#include <atomic>
+#include <condition_variable>
 #include <cstdint>
 #include <functional>
+#include <mutex>
 #include <queue>
 #include <string>
+#include <thread>
 #include <unordered_map>
 #include <vector>
 
@@ -28,7 +32,7 @@ class MqttClient {
 
     bool publish(
         const std::string &msg, const std::string &topic,
-        const std::uint32_t qos);
+        const std::uint32_t qos, const bool retain = false);
 
     bool disconnect();
 
@@ -36,10 +40,17 @@ class MqttClient {
 
    private:
     const int MQTT_TIMEOUT = 10000;
+    const int MQTT_CONN_CHECK = 60000;
 
-    std::string   host;
-    std::uint32_t port;
-    std::string   clientID;
+    std::string       host;
+    std::uint32_t     port;
+    std::string       clientID;
+    std::atomic<bool> connected = false;
+
+    std::condition_variable wrkCv;
+    std::thread             wrkTh;
+    std::mutex              wrkMtx;
+    std::atomic<bool>       shouldStopWrk;
 
     mqtt::async_client    client;
     mqtt::connect_options connectOpts;
@@ -48,5 +59,6 @@ class MqttClient {
     std::function<void(mqtt::const_message_ptr msg)> msgArrivedCb = nullptr;
 
     void subscribeTopics();
+    void reconnectionWorker();
 };
 };  // namespace OcelotMDM::component::network
