@@ -21,7 +21,8 @@ class UptimeService {
     void workerFunction();
 
    private:
-    const int UPDATE_FREQUENCY = 60000 * 2;
+    // const int UPDATE_FREQUENCY = 60000 * 2;
+    const int UPDATE_FREQUENCY = 5000;
 
     std::string         deviceID;
     network::MqttClient mqttClient;

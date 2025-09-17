@@ -40,25 +40,32 @@ class MqttClient {
 
    private:
     const int MQTT_TIMEOUT = 10000;
-    const int MQTT_CONN_CHECK = 60000;
+    const int MQTT_CONN_CHECK = 10000;
 
     std::string       host;
     std::uint32_t     port;
     std::string       clientID;
     std::atomic<bool> connected = false;
 
-    std::condition_variable wrkCv;
-    std::thread             wrkTh;
-    std::mutex              wrkMtx;
-    std::atomic<bool>       shouldStopWrk;
+    std::condition_variable reconnectCv;
+    std::thread             reconnectTh;
+    std::mutex              reconnectMtx;
+    std::atomic<bool>       shouldStopTh;
+
+    std::condition_variable queueCv;
+    std::thread             queueTh;
+    std::mutex              queueMtx;
 
     mqtt::async_client    client;
     mqtt::connect_options connectOpts;
+
+    std::queue<std::pair<std::string, std::string>> messageQueue;
 
     std::unordered_map<std::string, bool>            topics;
     std::function<void(mqtt::const_message_ptr msg)> msgArrivedCb = nullptr;
 
     void subscribeTopics();
     void reconnectionWorker();
+    void queueWorker();
 };
 };  // namespace OcelotMDM::component::network

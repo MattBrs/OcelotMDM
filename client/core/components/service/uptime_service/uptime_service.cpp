@@ -44,7 +44,8 @@ void UptimeService::workerFunction() {
             auto              localNow = std::mktime(std::localtime(&now));
 
             ss << localNow << " " << vpnIp.value();
-            this->mqttClient.publish(ss.str(), this->deviceID + "/online", 1);
+            this->mqttClient.publish(
+                ss.str(), this->deviceID + "/online", 1, true);
         }
 
         std::unique_lock<std::mutex> lock(this->workerMtx);
