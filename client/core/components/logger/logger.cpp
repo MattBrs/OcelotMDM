@@ -78,7 +78,10 @@ void Logger::switchFile() {
     std::clog.rdbuf(nullptr);
 
     this->output.close();
+
     this->currentFileName = this->generateFileName();
+    this->currentFileSize = 0;
+
     this->output = std::ofstream(currentFileName, std::ios_base::app);
 
     std::clog.rdbuf(this->output.rdbuf());

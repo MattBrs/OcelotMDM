@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -27,6 +28,7 @@ func NewCommandHandler(service *command.Service) *CommandHandler {
 func (handler *CommandHandler) AddNewCommand(ctx *gin.Context) {
 	var req command_dto.AddNewCommadRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
+		fmt.Println("could not parse json: ", err.Error())
 		ctx.JSON(
 			http.StatusBadRequest,
 			command_dto.ResponseErr{

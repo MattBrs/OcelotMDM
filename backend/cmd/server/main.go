@@ -11,11 +11,12 @@ import (
 	"github.com/MattBrs/OcelotMDM/internal/api/interceptor"
 	"github.com/MattBrs/OcelotMDM/internal/domain/command"
 	"github.com/MattBrs/OcelotMDM/internal/domain/command_action"
-	"github.com/MattBrs/OcelotMDM/internal/domain/command_queue"
 	"github.com/MattBrs/OcelotMDM/internal/domain/device"
 	"github.com/MattBrs/OcelotMDM/internal/domain/mqtt/ocelot_mqtt"
+	"github.com/MattBrs/OcelotMDM/internal/domain/service/command_queue"
+	"github.com/MattBrs/OcelotMDM/internal/domain/service/logs"
+	"github.com/MattBrs/OcelotMDM/internal/domain/service/uptime"
 	"github.com/MattBrs/OcelotMDM/internal/domain/token"
-	"github.com/MattBrs/OcelotMDM/internal/domain/uptime"
 	"github.com/MattBrs/OcelotMDM/internal/domain/user"
 	"github.com/MattBrs/OcelotMDM/internal/domain/vpn"
 	"github.com/MattBrs/OcelotMDM/internal/storage"
@@ -182,6 +183,7 @@ func initMqttClient(deviceService *device.Service) *ocelot_mqtt.MqttClient {
 		deviceName := devices[i].Name
 
 		_ = mqttClient.Subscribe(deviceName+"/ack", 1)
+		_ = mqttClient.Subscribe(deviceName+"/logs", 1)
 		_ = mqttClient.Subscribe(deviceName+"/online", 1)
 	}
 
@@ -263,8 +265,15 @@ func main() {
 	)
 	uptimeService.Start()
 
-	defer commandQueueService.Stop()
+	logService := logs.NewService(
+		context.Background(),
+		mqttClient,
+	)
+	logService.Start()
+
+	defer logService.Stop()
 	defer uptimeService.Stop()
+	defer commandQueueService.Stop()
 
 	err = router.Run(":8080")
 	if err != nil {
