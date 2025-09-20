@@ -180,7 +180,7 @@ std::optional<CommandImpl::ExecutionResult> CommandService::executeCommand(
     }
 
     if (cmd.getAction().compare("send_logs") == 0) {
-        auto res = CommandImpl::sendLogs(&this->mqttClient);
+        auto res = CommandImpl::sendLogs(&this->mqttClient, this->deviceID);
         return res;
     }
 

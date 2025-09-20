@@ -11,7 +11,6 @@ class CommandImpl {
     typedef struct cmdResProps {
         std::string applicationName;
         std::string applicationPath;
-        std::string logData;
         std::string error;
     } CmdResProps;
 
@@ -30,6 +29,10 @@ class CommandImpl {
     /**
      *  If successful, returns logData inside props, otherwise the error
      */
-    static ExecutionResult sendLogs(network::MqttClient *client);
+    static ExecutionResult sendLogs(
+        network::MqttClient *client, const std::string &deviceID);
+
+   private:
+    static std::string readFile(const std::string &filePath);
 };
 }  // namespace OcelotMDM::component

@@ -20,10 +20,11 @@ class Logger {
         const std::string &,
         const std::source_location & = std::source_location::current());
 
-    void switchFile();
+    void        switchFile();
+    std::string getCurrentLogName();
 
    private:
-    const int MAX_LOG_SIZE = 1048576;  // 1MB
+    const int MAX_LOG_SIZE = 262144;  // 256KB
 
     std::mutex    logMtx;
     std::ofstream output;

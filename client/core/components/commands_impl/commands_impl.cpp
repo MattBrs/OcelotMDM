@@ -1,6 +1,11 @@
 #include "commands_impl.hpp"
 
+#include <filesystem>
+#include <fstream>
+#include <ios>
 #include <iostream>
+#include <string>
+#include <vector>
 
 #include "logger.hpp"
 
@@ -21,16 +26,42 @@ CommandImpl::ExecutionResult CommandImpl::installBinary(
 }
 
 CommandImpl::ExecutionResult CommandImpl::sendLogs(
-    network::MqttClient *client) {
+    network::MqttClient *client, const std::string &deviceID) {
     executionResult res;
 
-    // read the log file
-    // send the logs through mqtt <device_id>/logs topic
-    // delete the log file since it's synced
+    Logger::getInstance().switchFile();
 
-    Logger::getInstance().put("shound run command send_logs");
+    std::string logPath{"logs"};
+    std::string currentLogName = Logger::getInstance().getCurrentLogName();
+    std::string topic = std::string{deviceID}.append("/logs");
 
-    res.props.error = "not implemented yet";
+    for (const auto &entry : std::filesystem::directory_iterator(logPath)) {
+        auto file = entry.path();
+        if (file.compare(currentLogName) == 0) {
+            // skip the current file
+            continue;
+        }
+
+        auto fileData = CommandImpl::readFile(file);
+        client->publish(fileData, topic, 1);
+        std::filesystem::remove(file);
+
+        Logger::getInstance().put("Sent log: " + file.filename().string());
+    }
+
+    res.successful = true;
     return res;
+}
+
+std::string CommandImpl::readFile(const std::string &filePath) {
+    std::ifstream ifs(
+        filePath.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    auto fileSize = ifs.tellg();
+    ifs.seekg(0, std::ios::beg);
+
+    std::vector<char> bytes(fileSize);
+    ifs.read(bytes.data(), fileSize);
+
+    return std::string{bytes.data(), static_cast<unsigned long>(fileSize)};
 }
 };  // namespace OcelotMDM::component

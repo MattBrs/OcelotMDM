@@ -96,4 +96,8 @@ std::string Logger::generateFileName() const {
     return fileName;
 }
 
+std::string Logger::getCurrentLogName() {
+    return this->currentFileName;
+}
+
 };  // namespace OcelotMDM::component
