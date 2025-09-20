@@ -15,6 +15,7 @@ import (
 	"github.com/MattBrs/OcelotMDM/internal/domain/device"
 	"github.com/MattBrs/OcelotMDM/internal/domain/mqtt/ocelot_mqtt"
 	"github.com/MattBrs/OcelotMDM/internal/domain/token"
+	"github.com/MattBrs/OcelotMDM/internal/domain/uptime"
 	"github.com/MattBrs/OcelotMDM/internal/domain/user"
 	"github.com/MattBrs/OcelotMDM/internal/domain/vpn"
 	"github.com/MattBrs/OcelotMDM/internal/storage"
@@ -255,7 +256,15 @@ func main() {
 	)
 	commandQueueService.Start()
 
+	uptimeService := uptime.NewService(
+		context.Background(),
+		mqttClient,
+		deviceService,
+	)
+	uptimeService.Start()
+
 	defer commandQueueService.Stop()
+	defer uptimeService.Stop()
 
 	err = router.Run(":8080")
 	if err != nil {

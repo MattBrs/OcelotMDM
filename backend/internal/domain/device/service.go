@@ -84,6 +84,23 @@ func (s *Service) UpdateAddress(ctx context.Context, name string, ip string) err
 	return nil
 }
 
+func (s *Service) UpdateUpStatus(ctx context.Context, name string, ip string, lastSeen int64) error {
+	dev, err := s.repo.GetByName(ctx, name)
+	if err != nil {
+		return err
+	}
+
+	dev.IPAddress = ip
+	dev.LastSeen = lastSeen
+
+	err = s.repo.Update(ctx, dev)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (s *Service) ListDevices(ctx context.Context, filter DeviceFilter) ([]*Device, error) {
 	devices, err := s.repo.List(ctx, filter)
 	if err != nil {

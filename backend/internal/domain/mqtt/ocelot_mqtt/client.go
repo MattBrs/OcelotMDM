@@ -8,11 +8,11 @@ import (
 )
 
 type MqttClient struct {
-	pahoClient    paho_mqtt.MqttClient
-	AckMessages   chan ChanMessage
-	LogMessages   chan ChanMessage
-	OtherMessages chan ChanMessage
-	doneChannel   chan bool
+	pahoClient     paho_mqtt.MqttClient
+	AckMessages    chan ChanMessage
+	LogMessages    chan ChanMessage
+	UptimeMessages chan ChanMessage
+	doneChannel    chan bool
 }
 
 type ChanMessage struct {
@@ -22,11 +22,11 @@ type ChanMessage struct {
 
 func NewMqttClient(server string, port uint) *MqttClient {
 	client := MqttClient{
-		pahoClient:    paho_mqtt.NewMqttClient(server, port),
-		AckMessages:   make(chan ChanMessage, 1000),
-		LogMessages:   make(chan ChanMessage, 1000),
-		OtherMessages: make(chan ChanMessage, 1000),
-		doneChannel:   make(chan bool),
+		pahoClient:     paho_mqtt.NewMqttClient(server, port),
+		AckMessages:    make(chan ChanMessage, 1000),
+		LogMessages:    make(chan ChanMessage, 1000),
+		UptimeMessages: make(chan ChanMessage, 1000),
+		doneChannel:    make(chan bool),
 	}
 
 	go func() {
@@ -54,7 +54,7 @@ func demuxChannels(client *MqttClient) {
 			} else if strings.Contains(msg.Topic(), "logs") {
 				tryEnqueue(client.LogMessages, fwMsg, "logs")
 			} else {
-				tryEnqueue(client.OtherMessages, fwMsg, "other")
+				tryEnqueue(client.UptimeMessages, fwMsg, "other")
 			}
 		}
 	}
@@ -80,7 +80,7 @@ func (client *MqttClient) Close() {
 	close(client.doneChannel)
 	close(client.AckMessages)
 	close(client.LogMessages)
-	close(client.OtherMessages)
+	close(client.UptimeMessages)
 }
 
 func (client *MqttClient) Subscribe(topic string, qos byte) error {
