@@ -12,9 +12,10 @@ import (
 	"github.com/MattBrs/OcelotMDM/internal/domain/command"
 	"github.com/MattBrs/OcelotMDM/internal/domain/command_action"
 	"github.com/MattBrs/OcelotMDM/internal/domain/device"
+	"github.com/MattBrs/OcelotMDM/internal/domain/logs"
 	"github.com/MattBrs/OcelotMDM/internal/domain/mqtt/ocelot_mqtt"
 	"github.com/MattBrs/OcelotMDM/internal/domain/service/command_queue"
-	"github.com/MattBrs/OcelotMDM/internal/domain/service/logs"
+	"github.com/MattBrs/OcelotMDM/internal/domain/service/logs_handler"
 	"github.com/MattBrs/OcelotMDM/internal/domain/service/uptime"
 	"github.com/MattBrs/OcelotMDM/internal/domain/token"
 	"github.com/MattBrs/OcelotMDM/internal/domain/user"
@@ -203,6 +204,7 @@ func main() {
 		}
 	}()
 
+	logCol := mongoConn.GetCollection(os.Getenv("DBNAME"), "logs")
 	userCol := mongoConn.GetCollection(os.Getenv("DBNAME"), "users")
 	tokenCol := mongoConn.GetCollection(os.Getenv("DBNAME"), "tokens")
 	deviceCol := mongoConn.GetCollection(os.Getenv("DBNAME"), "devices")
@@ -211,6 +213,7 @@ func main() {
 		os.Getenv("DBNAME"), "command_actions",
 	)
 
+	logRepo := logs.NewMongoRepository(logCol)
 	userRepo := user.NewMongoRepository(userCol)
 	tokenRepo := token.NewMongoRepository(tokenCol)
 	deviceRepo := device.NewMongoRepository(deviceCol)
@@ -219,6 +222,7 @@ func main() {
 		commandActionCol,
 	)
 
+	logService := logs.NewService(logRepo)
 	vpnService := vpn.NewService("http://vpn_api:8080")
 	userService := user.NewService(userRepo)
 	tokenService := token.NewService(tokenRepo)
@@ -265,13 +269,14 @@ func main() {
 	)
 	uptimeService.Start()
 
-	logService := logs.NewService(
+	logHandlerService := logs_handler.NewService(
 		context.Background(),
 		mqttClient,
+		logService,
 	)
-	logService.Start()
+	logHandlerService.Start()
 
-	defer logService.Stop()
+	defer logHandlerService.Stop()
 	defer uptimeService.Stop()
 	defer commandQueueService.Stop()
 
