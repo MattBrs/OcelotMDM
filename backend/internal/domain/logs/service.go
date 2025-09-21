@@ -19,7 +19,7 @@ func (s *Service) AddLog(ctx context.Context, deviceName string, logData []byte)
 	log := Log{
 		ID:               primitive.NewObjectID(),
 		deviceName:       deviceName,
-		LogData:          logData,
+		LogData:          string(logData),
 		LogSize:          len(logData),
 		RegistrationTime: time.Now(),
 	}

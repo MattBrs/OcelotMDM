@@ -10,6 +10,6 @@ type Log struct {
 	ID               primitive.ObjectID `bson:"_id,omitempty"`
 	deviceName       string             `bson:"device_name,omitempty"`
 	RegistrationTime time.Time          `bson:"registration_time,omitempty"`
-	LogData          []byte             `bson:"log_data,omitempty"`
+	LogData          string             `bson:"log_data,omitempty"`
 	LogSize          int                `bson:"log_size,omitempty"`
 }
