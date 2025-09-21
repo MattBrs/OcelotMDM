@@ -19,11 +19,8 @@ int main() {
 
     UptimeService  uptimeService("159.89.2.75", 1883, "misty-dew");
     CommandService cmdService(
-        dbClient.getCommandDao(), "159.89.2.75", 1883, "misty-dew");
-
-    HttpClient httpClient("https://httpbin.org/ip");
-
-    std::cout << "Hello!" << std::endl;
+        dbClient.getCommandDao(), "159.89.2.75", 1883, "https://159.89.2.75/",
+        "misty-dew");
 
     while (true);
 }

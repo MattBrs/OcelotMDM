@@ -21,17 +21,21 @@
 #include "command_dao.hpp"
 #include "command_model.hpp"
 #include "commands_impl.hpp"
+#include "http_client.hpp"
 #include "logger.hpp"
 #include "mqtt_client.hpp"
 #include "nlohmann/json.hpp"
+#include "utils.hpp"
 
 namespace OcelotMDM::component::service {
 CommandService::CommandService(
     const std::shared_ptr<db::CommandDao> &cmdDao, const std::string &mqttIp,
-    const std::uint32_t mqttPort, const std::string &deviceID)
+    const std::uint32_t mqttPort, const std::string &httpBaseUrl,
+    const std::string &deviceID)
     : cmdDao(cmdDao),
       deviceID(deviceID),
-      mqttClient(mqttIp, mqttPort, deviceID + "_cmd") {
+      mqttClient(mqttIp, mqttPort, deviceID + "_cmd"),
+      httpClient(httpBaseUrl) {
     auto queuedCommands = this->cmdDao->getQueuedCommands();
     if (queuedCommands.has_value()) {
         for (auto &cmd : queuedCommands.value()) {
@@ -175,7 +179,15 @@ std::optional<CommandImpl::ExecutionResult> CommandService::executeCommand(
     Logger::getInstance().put("command action " + cmd.getAction());
 
     if (cmd.getAction().compare("install_binary") == 0) {
-        auto res = CommandImpl::installBinary(nullptr, cmd.getPayload());
+        nlohmann::json payload;
+        try {
+            payload = nlohmann::json::parse(cmd.getPayload());
+        } catch (nlohmann::json::exception &e) {
+            return std::nullopt;
+        }
+
+        auto res = CommandImpl::installBinary(
+            &this->httpClient, payload["name"], payload["otp"]);
         return res;
     }
 

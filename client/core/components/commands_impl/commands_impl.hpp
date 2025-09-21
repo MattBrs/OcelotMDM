@@ -24,7 +24,8 @@ class CommandImpl {
      * props, otherwise the error
      */
     static ExecutionResult installBinary(
-        network::HttpClient *client, const std::string &url);
+        network::HttpClient *client, const std::string &name,
+        const std::string &otp);
 
     /**
      *  If successful, returns logData inside props, otherwise the error

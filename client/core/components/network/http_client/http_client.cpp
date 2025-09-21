@@ -11,6 +11,7 @@
 #include <string>
 
 #include "http_response.hpp"
+#include "logger.hpp"
 
 namespace OcelotMDM::component::network {
 HttpClient::HttpClient(const std::string &baseUrl) {
@@ -39,6 +40,8 @@ httpResponse HttpClient::get(
     auto              curlHeader = HttpClient::generateHeader(header);
     auto              url = this->buildUrl(this->baseUrl, path, queryParams);
 
+    Logger::getInstance().put("full http url: " + url);
+
     errorBuffer[0] = 0;
 
     curl_easy_setopt(this->curlHandle, CURLOPT_HTTPGET, 1L);
@@ -48,6 +51,8 @@ httpResponse HttpClient::get(
     curl_easy_setopt(this->curlHandle, CURLOPT_ERRORBUFFER, errorBuffer);
     curl_easy_setopt(this->curlHandle, CURLOPT_FOLLOWLOCATION, url.c_str());
     curl_easy_setopt(this->curlHandle, CURLOPT_WRITEDATA, &resData);
+    curl_easy_setopt(this->curlHandle, CURLOPT_SSL_VERIFYPEER, 0);
+    curl_easy_setopt(this->curlHandle, CURLOPT_SSL_VERIFYHOST, 0);
 
     auto res = curl_easy_perform(this->curlHandle);
 

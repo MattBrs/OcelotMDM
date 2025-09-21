@@ -7,21 +7,47 @@
 #include <string>
 #include <vector>
 
+#include "api_handler.hpp"
+#include "dto.hpp"
 #include "logger.hpp"
 
 namespace OcelotMDM::component {
 CommandImpl::ExecutionResult CommandImpl::installBinary(
-    network::HttpClient *client, const std::string &url) {
+    network::HttpClient *client, const std::string &name,
+    const std::string &otp) {
     executionResult res;
+    std::filesystem::create_directory("bin");
+    if (client == nullptr) {
+        res.props.error = "http client not initialized";
+        return res;
+    }
 
-    // fetch binary with httpClient
-    // install to binaries directory
-    // return the binary info so that the application can be managed
+    Logger::getInstance().put("inside install binary");
+    Logger::getInstance().put(name);
+    Logger::getInstance().put(otp);
+    auto httpRes = Api::Handler::getBinary(
+        client,
+        component::Api::Dto::GetBinaryReq{.binaryName = name, .otp = otp});
+    Logger::getInstance().put("after http call");
 
-    Logger::getInstance().put(
-        "shound run command install_command for url:" + url);
+    if (!httpRes.has_value()) {
+        Logger::getInstance().put("error on binary fetch");
+        res.props.error = "error on binary fetch";
+        return res;
+    }
 
-    res.props.error = "not implemented yet";
+    auto          appPath = std::string{"bin/"}.append(name);
+    std::ofstream out(appPath);
+    
+
+
+    out << httpRes.value().binaryData;
+    out.close();
+
+    res.successful = true;
+    res.props.applicationName = name;
+    res.props.applicationPath = appPath;
+
     return res;
 }
 

@@ -9,6 +9,7 @@ add_library(
   ${CMAKE_CURRENT_SOURCE_DIR}/http_response.hpp)
 
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(${LIBRARY_NAME} PUBLIC CURL::libcurl)
+target_link_libraries(${LIBRARY_NAME} PUBLIC CURL::libcurl
+                                             OcelotMDM::Component::Logger)
 
 add_library(OcelotMDM::Component::Network::HttpClient ALIAS ${LIBRARY_NAME})

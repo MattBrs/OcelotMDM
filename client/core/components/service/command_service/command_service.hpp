@@ -15,6 +15,7 @@
 #include "command_dao.hpp"
 #include "command_model.hpp"
 #include "commands_impl.hpp"
+#include "http_client.hpp"
 #include "mqtt_client.hpp"
 
 namespace OcelotMDM::component::service {
@@ -23,7 +24,7 @@ class CommandService {
     CommandService(
         const std::shared_ptr<db::CommandDao> &cmdDao,
         const std::string &mqttIp, const std::uint32_t port,
-        const std::string &deviceID);
+        const std::string &httpBaseUrl, const std::string &deviceID);
 
     ~CommandService();
 
@@ -35,6 +36,7 @@ class CommandService {
     std::string                         deviceID;
     std::priority_queue<model::Command> cmdQueue;
     network::MqttClient                 mqttClient;
+    network::HttpClient                 httpClient;
     std::set<std::string>               queuedCmds;
 
     std::thread             queueTh;

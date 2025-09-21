@@ -8,6 +8,7 @@ target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(
   ${LIBRARY_NAME}
   PUBLIC OcelotMDM::Component::Network::MqttClient
-         OcelotMDM::Component::Network::HttpClient OcelotMDM::Component::Logger)
+         OcelotMDM::Component::Network::HttpClient OcelotMDM::Component::Logger
+         OcelotMDM::Component::Utils OcelotMDM::Component::Api::Handler)
 
 add_library(OcelotMDM::Component::CommandsImpl ALIAS ${LIBRARY_NAME})
