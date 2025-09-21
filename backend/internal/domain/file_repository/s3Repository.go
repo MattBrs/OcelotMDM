@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -50,12 +51,40 @@ func NewS3Repository(
 	}
 }
 
-func (repo *S3Repository) AddBinary() error {
+func (repo *S3Repository) AddBinary(
+	fileName string,
+	fileData []byte,
+) error {
 	_, err := repo.s3Client.PutObject(repo.ctx, &s3.PutObjectInput{
 		Bucket: aws.String(repo.bucketName),
-		Key:    aws.String("test"),
-		Body:   bytes.NewReader([]byte("saahahahahahhaha")),
+		Key:    aws.String(fileName),
+		Body:   bytes.NewReader(fileData),
 	})
 
 	return err
+}
+
+func (repo *S3Repository) GetBinary(
+	fileName string,
+) ([]byte, error) {
+	result, err := repo.s3Client.GetObject(repo.ctx, &s3.GetObjectInput{
+		Bucket: &repo.bucketName,
+		Key:    aws.String(fileName),
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		_ = result.Body.Close()
+	}()
+
+	body, err := io.ReadAll(result.Body)
+	if err != nil {
+		fmt.Println("could not read object body")
+		return nil, err
+	}
+
+	return body, nil
 }

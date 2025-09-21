@@ -239,10 +239,18 @@ func main() {
 		commandActionCol,
 	)
 
-	if err := s3Repo.AddBinary(); err != nil {
+	err = s3Repo.AddBinary("test_file.txt", []byte("this is a test"))
+	if err != nil {
 		fmt.Println("error on test objPut: ", err.Error())
 	} else {
 		fmt.Println("success on test objPut")
+	}
+
+	fileData, err := s3Repo.GetBinary("test_file.txt")
+	if err != nil {
+		fmt.Println("error on get test object: ", err.Error())
+	} else {
+		fmt.Println("get test object data: ", string(fileData))
 	}
 
 	logService := logs.NewService(logRepo)
