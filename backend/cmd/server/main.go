@@ -9,6 +9,7 @@ import (
 
 	"github.com/MattBrs/OcelotMDM/internal/api/handler"
 	"github.com/MattBrs/OcelotMDM/internal/api/interceptor"
+	"github.com/MattBrs/OcelotMDM/internal/domain/binary"
 	"github.com/MattBrs/OcelotMDM/internal/domain/command"
 	"github.com/MattBrs/OcelotMDM/internal/domain/command_action"
 	"github.com/MattBrs/OcelotMDM/internal/domain/device"
@@ -30,6 +31,7 @@ import (
 type Handlers struct {
 	userHandler          *api.UserHandler
 	tokenHandler         *api.TokenHandler
+	binaryHandler        *api.BinaryHandler
 	deviceHandler        *api.DeviceHandler
 	commandHandler       *api.CommandHandler
 	commandActionHandler *api.CommandActionHandler
@@ -153,6 +155,16 @@ func setGinRoutes(router *gin.Engine, handlers Handlers, authIntr *interceptor.I
 		authIntr.CheckAuth,
 		handlers.commandActionHandler.DeleteCommandAction,
 	)
+
+	router.POST(
+		"/binary/add",
+		authIntr.CheckAuth,
+		handlers.binaryHandler.AddNewBinary,
+	)
+	router.GET(
+		"/binary/get",
+		handlers.binaryHandler.GetBinary,
+	)
 }
 
 func initMqttClient(deviceService *device.Service) *ocelot_mqtt.MqttClient {
@@ -208,6 +220,7 @@ func main() {
 	logCol := mongoConn.GetCollection(os.Getenv("DBNAME"), "logs")
 	userCol := mongoConn.GetCollection(os.Getenv("DBNAME"), "users")
 	tokenCol := mongoConn.GetCollection(os.Getenv("DBNAME"), "tokens")
+	binaryCol := mongoConn.GetCollection(os.Getenv("DBNAME"), "binaries")
 	deviceCol := mongoConn.GetCollection(os.Getenv("DBNAME"), "devices")
 	commandCol := mongoConn.GetCollection(os.Getenv("DBNAME"), "commands")
 	commandActionCol := mongoConn.GetCollection(
@@ -233,6 +246,7 @@ func main() {
 	logRepo := logs.NewMongoRepository(logCol)
 	userRepo := user.NewMongoRepository(userCol)
 	tokenRepo := token.NewMongoRepository(tokenCol)
+	binaryRepo := binary.NewMongoRepository(binaryCol)
 	deviceRepo := device.NewMongoRepository(deviceCol)
 	commandRepo := command.NewMongoRepository(commandCol)
 	commandActionRepo := command_action.NewMongoCommandActionRepository(
@@ -254,11 +268,12 @@ func main() {
 	}
 
 	logService := logs.NewService(logRepo)
-	vpnService := vpn.NewService("http://vpn_api:8080")
 	userService := user.NewService(userRepo)
 	tokenService := token.NewService(tokenRepo)
-	deviceService := device.NewService(deviceRepo, tokenService, vpnService)
+	vpnService := vpn.NewService("http://vpn_api:8080")
 	commandActionService := command_action.NewService(commandActionRepo)
+	binaryService := binary.NewService(s3Repo, binaryRepo, tokenService)
+	deviceService := device.NewService(deviceRepo, tokenService, vpnService)
 	commandService := command.NewService(
 		commandRepo,
 		deviceService,
@@ -268,6 +283,7 @@ func main() {
 	handlers := Handlers{
 		userHandler:    api.NewUserHandler(userService),
 		tokenHandler:   api.NewTokenHandler(tokenService),
+		binaryHandler:  api.NewBinaryHandler(binaryService),
 		deviceHandler:  api.NewDeviceHandler(deviceService),
 		commandHandler: api.NewCommandHandler(commandService),
 		commandActionHandler: api.NewCommandActionHandler(
