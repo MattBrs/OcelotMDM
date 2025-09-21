@@ -12,6 +12,7 @@ import (
 	"github.com/MattBrs/OcelotMDM/internal/domain/command"
 	"github.com/MattBrs/OcelotMDM/internal/domain/command_action"
 	"github.com/MattBrs/OcelotMDM/internal/domain/device"
+	"github.com/MattBrs/OcelotMDM/internal/domain/file_repository"
 	"github.com/MattBrs/OcelotMDM/internal/domain/logs"
 	"github.com/MattBrs/OcelotMDM/internal/domain/mqtt/ocelot_mqtt"
 	"github.com/MattBrs/OcelotMDM/internal/domain/service/command_queue"
@@ -213,6 +214,22 @@ func main() {
 		os.Getenv("DBNAME"), "command_actions",
 	)
 
+	s3Repo := file_repository.NewS3Repository(
+		context.Background(),
+		os.Getenv("SPACES_KEY"),
+		os.Getenv("SPACES_SECRET"),
+		os.Getenv("SPACES_ENDPOINT"),
+		os.Getenv("SPACES_BUCKET"),
+		os.Getenv("SPACES_REGION"),
+	)
+
+	if s3Repo == nil {
+		fmt.Println("s3 client is nil")
+		os.Exit(1)
+	}
+
+	fmt.Println("s3 client created")
+
 	logRepo := logs.NewMongoRepository(logCol)
 	userRepo := user.NewMongoRepository(userCol)
 	tokenRepo := token.NewMongoRepository(tokenCol)
@@ -221,6 +238,12 @@ func main() {
 	commandActionRepo := command_action.NewMongoCommandActionRepository(
 		commandActionCol,
 	)
+
+	if err := s3Repo.AddBinary(); err != nil {
+		fmt.Println("error on test objPut: ", err.Error())
+	} else {
+		fmt.Println("success on test objPut")
+	}
 
 	logService := logs.NewService(logRepo)
 	vpnService := vpn.NewService("http://vpn_api:8080")
