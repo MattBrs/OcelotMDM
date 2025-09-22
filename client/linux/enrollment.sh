@@ -73,6 +73,11 @@ if [ "$http_code" -eq 201 ]; then
 
     echo "VPN configuration saved to ${device_name}.ovpn"
     echo "You can now connect using: openvpn ${device_name}.ovpn"
+    
+    echo "{" > conf.json
+    echo "\"device_name\": \"${device_name}\"," >> conf.json
+    echo "\"api_base_url\": \"159.89.2.75\"" >> conf.json
+    echo "}" >> conf.json
 else
     echo "Enrollment failed with HTTP code: $http_code"
     echo "Response: $body"
