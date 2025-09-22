@@ -43,7 +43,7 @@ int main() {
     DbClient       dbClient("test.db");
     UptimeService  uptimeService(mqttHost, 1883, deviceName);
     CommandService cmdService(
-        dbClient.getCommandDao(), mqttHost, 1883, apiBaseUrl, "misty-dew");
+        dbClient.getCommandDao(), mqttHost, 1883, apiBaseUrl, deviceName);
 
     while (true);
 }
