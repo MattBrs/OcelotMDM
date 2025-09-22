@@ -50,10 +50,15 @@ func (s *Service) GetBinary(ctx context.Context, binaryName string, otp string) 
 		return nil, nil, token.ErrOtpExpired
 	}
 
+	dbBinary, err := s.binaryRepo.Get(ctx, binaryName)
+	if err != nil {
+		return nil, nil, ErrBinaryNotFound
+	}
+
 	fileData, err := s.fileRepo.GetBinary(binaryName)
 	if err != nil {
 		return nil, nil, err
 	}
-	version := "1.0.0"
-	return fileData, &version, nil
+
+	return fileData, &dbBinary.Version, nil
 }

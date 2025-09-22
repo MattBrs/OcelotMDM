@@ -95,7 +95,7 @@ func (h *BinaryHandler) GetBinary(ctx *gin.Context) {
 
 	response := binary_dto.GetBinaryResponse{
 		BinaryName: binaryName,
-		Data:       data,
+		Data:       string(data),
 		Version:    *version,
 	}
 
