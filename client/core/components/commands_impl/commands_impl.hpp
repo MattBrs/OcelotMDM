@@ -34,6 +34,5 @@ class CommandImpl {
         network::MqttClient *client, const std::string &deviceID);
 
    private:
-    static std::string readFile(const std::string &filePath);
 };
 }  // namespace OcelotMDM::component

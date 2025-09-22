@@ -34,4 +34,7 @@ target_link_libraries(
   OcelotMDM::Component::Network::MqttClient
   OcelotMDM::Component::Service::CommandService
   OcelotMDM::Component::Service::UptimeService
-  OcelotMDM::Component::Db::Client)
+  OcelotMDM::Component::Db::Client
+  OcelotMDM::Component::Logger
+  OcelotMDM::Component::Utils
+  nlohmann_json::nlohmann_json)

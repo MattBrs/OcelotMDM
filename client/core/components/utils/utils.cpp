@@ -1,6 +1,8 @@
 #include "utils.hpp"
 
 #include <cstddef>
+#include <fstream>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -19,5 +21,22 @@ std::vector<std::string> splitString(
     tokens.emplace_back(og);
 
     return tokens;
+}
+
+std::optional<std::string> readFile(const std::string &filePath) {
+    std::ifstream ifs(
+        filePath.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+
+    if (!ifs.is_open()) {
+        return std::nullopt;
+    }
+
+    auto fileSize = ifs.tellg();
+    ifs.seekg(0, std::ios::beg);
+
+    std::vector<char> bytes(fileSize);
+    ifs.read(bytes.data(), fileSize);
+
+    return std::string{bytes.data(), static_cast<unsigned long>(fileSize)};
 }
 };  // namespace OcelotMDM::component::utils

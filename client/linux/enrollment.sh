@@ -76,7 +76,8 @@ if [ "$http_code" -eq 201 ]; then
     
     echo "{" > conf.json
     echo "\"device_name\": \"${device_name}\"," >> conf.json
-    echo "\"api_base_url\": \"159.89.2.75\"" >> conf.json
+    echo "\"api_base_url\": \"https://159.89.2.75/\"," >> conf.json
+    echo "\"mqtt_host\": \"159.89.2.75\"" >> conf.json
     echo "}" >> conf.json
 else
     echo "Enrollment failed with HTTP code: $http_code"

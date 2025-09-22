@@ -10,6 +10,7 @@
 #include "api_handler.hpp"
 #include "dto.hpp"
 #include "logger.hpp"
+#include "utils.hpp"
 
 namespace OcelotMDM::component {
 CommandImpl::ExecutionResult CommandImpl::installBinary(
@@ -38,8 +39,6 @@ CommandImpl::ExecutionResult CommandImpl::installBinary(
 
     auto          appPath = std::string{"bin/"}.append(name);
     std::ofstream out(appPath);
-    
-
 
     out << httpRes.value().binaryData;
     out.close();
@@ -68,8 +67,12 @@ CommandImpl::ExecutionResult CommandImpl::sendLogs(
             continue;
         }
 
-        auto fileData = CommandImpl::readFile(file);
-        client->publish(fileData, topic, 1);
+        auto fileData = utils::readFile(file);
+        if (!fileData.has_value()) {
+            continue;
+        }
+
+        client->publish(fileData.value(), topic, 1);
         std::filesystem::remove(file);
 
         Logger::getInstance().put("Sent log: " + file.filename().string());
@@ -79,15 +82,4 @@ CommandImpl::ExecutionResult CommandImpl::sendLogs(
     return res;
 }
 
-std::string CommandImpl::readFile(const std::string &filePath) {
-    std::ifstream ifs(
-        filePath.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-    auto fileSize = ifs.tellg();
-    ifs.seekg(0, std::ios::beg);
-
-    std::vector<char> bytes(fileSize);
-    ifs.read(bytes.data(), fileSize);
-
-    return std::string{bytes.data(), static_cast<unsigned long>(fileSize)};
-}
 };  // namespace OcelotMDM::component
