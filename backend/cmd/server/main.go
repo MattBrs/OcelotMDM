@@ -167,7 +167,7 @@ func setGinRoutes(router *gin.Engine, handlers Handlers, authIntr *interceptor.I
 	)
 }
 
-func initMqttClient(deviceService *device.Service) *ocelot_mqtt.MqttClient {
+func newMqttClient() *ocelot_mqtt.MqttClient {
 	mqttHost := os.Getenv("MQTT_HOST")
 	mqttPort, err := strconv.Atoi(os.Getenv("MQTT_PORT"))
 	if err != nil {
@@ -181,24 +181,6 @@ func initMqttClient(deviceService *device.Service) *ocelot_mqtt.MqttClient {
 	if err != nil {
 		fmt.Println("unable to establish mqtt connection")
 		panic(1)
-	}
-
-	devices, err := deviceService.ListDevices(
-		context.Background(),
-		device.DeviceFilter{},
-	)
-
-	if err != nil {
-		fmt.Println("could not fetch devices list: ", err.Error())
-		panic(1)
-	}
-
-	for i := range devices {
-		deviceName := devices[i].Name
-
-		_ = mqttClient.Subscribe(deviceName+"/ack", 1)
-		_ = mqttClient.Subscribe(deviceName+"/logs", 1)
-		_ = mqttClient.Subscribe(deviceName+"/online", 1)
 	}
 
 	return mqttClient
@@ -216,6 +198,9 @@ func main() {
 			panic(err)
 		}
 	}()
+
+	mqttClient := newMqttClient()
+	defer mqttClient.Close()
 
 	logCol := mongoConn.GetCollection(os.Getenv("DBNAME"), "logs")
 	userCol := mongoConn.GetCollection(os.Getenv("DBNAME"), "users")
@@ -273,7 +258,12 @@ func main() {
 	vpnService := vpn.NewService("http://vpn_api:8080")
 	commandActionService := command_action.NewService(commandActionRepo)
 	binaryService := binary.NewService(s3Repo, binaryRepo, tokenService)
-	deviceService := device.NewService(deviceRepo, tokenService, vpnService)
+	deviceService := device.NewService(
+		deviceRepo,
+		tokenService,
+		vpnService,
+		mqttClient,
+	)
 	commandService := command.NewService(
 		commandRepo,
 		deviceService,
@@ -297,9 +287,6 @@ func main() {
 
 	router := gin.Default()
 	setGinRoutes(router, handlers, authInterceptor)
-
-	mqttClient := initMqttClient(deviceService)
-	defer mqttClient.Close()
 
 	commandQueueService := command_queue.NewService(
 		context.Background(),

@@ -2,7 +2,9 @@ package device
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/MattBrs/OcelotMDM/internal/domain/mqtt/ocelot_mqtt"
 	"github.com/MattBrs/OcelotMDM/internal/domain/token"
 	"github.com/MattBrs/OcelotMDM/internal/domain/vpn"
 )
@@ -11,6 +13,7 @@ type Service struct {
 	repo         Repository
 	tokenService *token.Service
 	vpnService   *vpn.Service
+	mqttClient   *ocelot_mqtt.MqttClient
 }
 
 type DeviceFilter struct {
@@ -20,12 +23,34 @@ type DeviceFilter struct {
 	Architecture string
 }
 
-func NewService(repo Repository, tokenService *token.Service, vpnService *vpn.Service) *Service {
-	return &Service{
+func NewService(
+	repo Repository,
+	tokenService *token.Service,
+	vpnService *vpn.Service,
+	mqttClient *ocelot_mqtt.MqttClient,
+) *Service {
+	service := Service{
 		repo:         repo,
 		tokenService: tokenService,
 		vpnService:   vpnService,
+		mqttClient:   mqttClient,
 	}
+
+	devices, err := service.ListDevices(context.Background(), DeviceFilter{})
+	if err != nil {
+		fmt.Println("could not fetch existing devices list: ", err.Error())
+		return &service
+	}
+
+	for i := range devices {
+		deviceName := devices[i].Name
+
+		_ = service.mqttClient.Subscribe(deviceName+"/ack", 1)
+		_ = service.mqttClient.Subscribe(deviceName+"/logs", 1)
+		_ = service.mqttClient.Subscribe(deviceName+"/online", 1)
+	}
+
+	return &service
 }
 
 func (s *Service) RegisterNewDevice(ctx context.Context, dev *Device, otp string) ([]byte, error) {
@@ -55,6 +80,10 @@ func (s *Service) RegisterNewDevice(ctx context.Context, dev *Device, otp string
 	if err != nil {
 		return nil, err
 	}
+
+	_ = s.mqttClient.Subscribe(dev.Name+"/ack", 1)
+	_ = s.mqttClient.Subscribe(dev.Name+"/logs", 1)
+	_ = s.mqttClient.Subscribe(dev.Name+"/online", 1)
 
 	return newCert, nil
 }
