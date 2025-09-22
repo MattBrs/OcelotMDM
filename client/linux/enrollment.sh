@@ -27,7 +27,7 @@ if [ -z "$otp" ]; then
   exit 1
 fi
 
-echo "Please enter the type the device (ticket-burner, autist personal device, ecc)"
+echo "Please enter the type the device (ticket-burner, bus driver personal device, ecc)"
 
 read type
 
