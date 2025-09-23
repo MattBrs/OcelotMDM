@@ -8,8 +8,8 @@ import (
 
 type Log struct {
 	ID               primitive.ObjectID `bson:"_id,omitempty"`
-	deviceName       string             `bson:"device_name,omitempty"`
-	RegistrationTime time.Time          `bson:"registration_time,omitempty"`
-	LogData          string             `bson:"log_data,omitempty"`
-	LogSize          int                `bson:"log_size,omitempty"`
+	DeviceName       string             `bson:"device_name"`
+	RegistrationTime time.Time          `bson:"registration_time"`
+	LogData          string             `bson:"log_data"`
+	LogSize          int                `bson:"log_size"`
 }

@@ -36,19 +36,21 @@ func NewService(
 		mqttClient:   mqttClient,
 	}
 
-	devices, err := service.ListDevices(context.Background(), DeviceFilter{})
-	if err != nil {
-		fmt.Println("could not fetch existing devices list: ", err.Error())
-		return &service
-	}
+	go func() {
+		devices, err := service.ListDevices(context.Background(), DeviceFilter{})
+		if err != nil {
+			fmt.Println("could not fetch existing devices list: ", err.Error())
+			return
+		}
 
-	for i := range devices {
-		deviceName := devices[i].Name
+		for i := range devices {
+			deviceName := devices[i].Name
 
-		_ = service.mqttClient.Subscribe(deviceName+"/ack", 1)
-		_ = service.mqttClient.Subscribe(deviceName+"/logs", 1)
-		_ = service.mqttClient.Subscribe(deviceName+"/online", 1)
-	}
+			_ = service.mqttClient.Subscribe(deviceName+"/ack", 1)
+			_ = service.mqttClient.Subscribe(deviceName+"/logs", 1)
+			_ = service.mqttClient.Subscribe(deviceName+"/online", 1)
+		}
+	}()
 
 	return &service
 }

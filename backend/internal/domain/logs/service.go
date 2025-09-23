@@ -15,10 +15,10 @@ func NewService(repo Repository) *Service {
 	return &Service{repo}
 }
 
-func (s *Service) AddLog(ctx context.Context, deviceName string, logData []byte) error {
+func (s *Service) AddLog(ctx context.Context, devName string, logData []byte) error {
 	log := Log{
 		ID:               primitive.NewObjectID(),
-		deviceName:       deviceName,
+		DeviceName:       devName,
 		LogData:          string(logData),
 		LogSize:          len(logData),
 		RegistrationTime: time.Now(),

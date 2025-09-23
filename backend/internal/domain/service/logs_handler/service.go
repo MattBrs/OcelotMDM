@@ -51,7 +51,7 @@ func onMsgReceived(service *LogHandlerService, msg *ocelot_mqtt.ChanMessage) {
 		return
 	}
 
-	fmt.Printf("arrived log of size %d from topic %s\n", len(msg.Payload), msg.Topic)
+	fmt.Printf("arrived log of size %d from device %s\n", len(msg.Payload), topicParts[0])
 	err := service.logsService.AddLog(service.ctx, topicParts[0], msg.Payload)
 
 	if err != nil {
