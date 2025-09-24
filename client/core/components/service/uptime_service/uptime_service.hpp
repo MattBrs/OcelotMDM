@@ -3,6 +3,7 @@
 #include <atomic>
 #include <condition_variable>
 #include <cstdint>
+#include <memory>
 #include <mutex>
 #include <optional>
 #include <string>
@@ -14,8 +15,8 @@ namespace OcelotMDM::component::service {
 class UptimeService {
    public:
     UptimeService(
-        const std::string &mqttIp, const std::uint32_t port,
-        const std::string &deviceID);
+        const std::shared_ptr<network::MqttClient> &mqttClient,
+        const std::string                          &deviceID);
 
     ~UptimeService();
     void workerFunction();
@@ -24,8 +25,8 @@ class UptimeService {
     // const int UPDATE_FREQUENCY = 60000 * 2;
     const int UPDATE_FREQUENCY = 5000;
 
-    std::string         deviceID;
-    network::MqttClient mqttClient;
+    std::string                          deviceID;
+    std::shared_ptr<network::MqttClient> mqttClient;
 
     std::thread             workerTh;
     std::condition_variable workerCv;

@@ -1,7 +1,9 @@
 #pragma once
 
 #include <fstream>
+#include <memory>
 #include <mutex>
+#include <queue>
 #include <source_location>
 #include <string>
 
@@ -20,11 +22,16 @@ class Logger {
         const std::string &,
         const std::source_location & = std::source_location::current());
 
+    void registerQueue(
+        const std::shared_ptr<std::queue<std::string>> &logQueue);
+
     void        switchFile();
     std::string getCurrentLogName();
 
    private:
     const int MAX_LOG_SIZE = 262144;  // 256KB
+
+    std::shared_ptr<std::queue<std::string>> logQueue;
 
     std::mutex    logMtx;
     std::ofstream output;

@@ -7,7 +7,6 @@
 #include <functional>
 #include <iomanip>
 #include <ios>
-#include <list>
 #include <memory>
 #include <mutex>
 #include <nlohmann/json_fwd.hpp>
@@ -22,20 +21,21 @@
 #include "command_model.hpp"
 #include "commands_impl.hpp"
 #include "http_client.hpp"
+#include "log_streamer.hpp"
 #include "logger.hpp"
 #include "mqtt_client.hpp"
 #include "nlohmann/json.hpp"
-#include "utils.hpp"
 
 namespace OcelotMDM::component::service {
 CommandService::CommandService(
-    const std::shared_ptr<db::CommandDao> &cmdDao, const std::string &mqttIp,
-    const std::uint32_t mqttPort, const std::string &httpBaseUrl,
-    const std::string &deviceID)
+    const std::shared_ptr<db::CommandDao>      &cmdDao,
+    const std::shared_ptr<network::MqttClient> &mqttClient,
+    const std::string &httpBaseUrl, const std::string &deviceID)
     : cmdDao(cmdDao),
+      mqttClient(mqttClient),
       deviceID(deviceID),
-      mqttClient(mqttIp, mqttPort, deviceID + "_cmd"),
-      httpClient(httpBaseUrl) {
+      httpClient(httpBaseUrl),
+      logStreamer(mqttClient, deviceID) {
     auto queuedCommands = this->cmdDao->getQueuedCommands();
     if (queuedCommands.has_value()) {
         for (auto &cmd : queuedCommands.value()) {
@@ -46,11 +46,10 @@ CommandService::CommandService(
         }
     }
 
-    this->mqttClient.setMsgCallback(
+    this->mqttClient->setMsgCallback(
         std::bind(&CommandService::onCmdArrived, this, std::placeholders::_1));
 
-    this->mqttClient.connect();
-    mqttClient.subscribe(deviceID + "/cmd", 1);
+    mqttClient->subscribe(deviceID + "/cmd", 1);
 
     this->shouldStopTh.store(false);
     this->queueTh = std::thread(&CommandService::queueWorker, this);
@@ -85,7 +84,7 @@ void CommandService::queueWorker() {
             }
 
             auto encoded = this->encodeCmd(cmd);
-            this->mqttClient.publish(encoded, this->deviceID + "/ack", 1);
+            this->mqttClient->publish(encoded, this->deviceID + "/ack", 1);
 
             this->cmdDao->dequeCommand(cmd.getId());
         }
@@ -162,7 +161,7 @@ void CommandService::enqueueCommand(model::Command &cmd) {
     }
 
     auto encoded = this->encodeCmd(cmd);
-    this->mqttClient.publish(encoded, this->deviceID + "/ack", 1);
+    this->mqttClient->publish(encoded, this->deviceID + "/ack", 1);
 }
 
 std::string CommandService::encodeCmd(const model::Command &cmd) {
@@ -192,7 +191,31 @@ std::optional<CommandImpl::ExecutionResult> CommandService::executeCommand(
     }
 
     if (cmd.getAction().compare("send_logs") == 0) {
-        auto res = CommandImpl::sendLogs(&this->mqttClient, this->deviceID);
+        auto res = CommandImpl::sendLogs(this->mqttClient, this->deviceID);
+        return res;
+    }
+
+    if (cmd.getAction().compare("enable_live_logging") == 0) {
+        CommandImpl::ExecutionResult res;
+        if (this->logStreamer.isRunning()) {
+            res.successful = false;
+            res.props.error = "live logging already enabled";
+
+            return res;
+        }
+
+        auto streamerQueue = this->logStreamer.getQueue();
+        Logger::getInstance().registerQueue(streamerQueue);
+        this->logStreamer.run();
+
+        this->timer.start(
+            [this]() {
+                Logger::getInstance().registerQueue(nullptr);
+                this->logStreamer.stop();
+            },
+            1 * 60 * 1000, false);
+
+        res.successful = true;
         return res;
     }
 

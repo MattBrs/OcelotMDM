@@ -94,6 +94,8 @@ bool MqttClient::connect() {
 }
 
 bool MqttClient::subscribe(const std::string &topic, const std::uint32_t qos) {
+    auto guard = std::lock_guard<std::mutex>(this->usageMtx);
+
     if (!this->connected.load()) {
         this->topics[topic] = false;
         return false;
@@ -109,6 +111,8 @@ bool MqttClient::subscribe(const std::string &topic, const std::uint32_t qos) {
 bool MqttClient::publish(
     const std::string &msg, const std::string &topic, const std::uint32_t qos,
     const bool retain) {
+    auto guard = std::lock_guard<std::mutex>(this->usageMtx);
+
     if (!this->connected.load()) {
         if (!retain) {
             // we dont care about retained messages

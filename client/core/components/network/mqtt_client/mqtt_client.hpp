@@ -45,6 +45,7 @@ class MqttClient {
     std::string       host;
     std::uint32_t     port;
     std::string       clientID;
+    std::mutex        usageMtx;
     std::atomic<bool> connected = false;
 
     std::condition_variable reconnectCv;

@@ -13,6 +13,8 @@ target_link_libraries(
          OcelotMDM::Component::Db::Dao::Command
          OcelotMDM::Component::CommandsImpl
          OcelotMDM::Component::Logger
+         OcelotMDM::Component::LogStreamer
+         OcelotMDM::Component::Timer
          OcelotMDM::Component::Utils)
 
 add_library(OcelotMDM::Component::Service::CommandService ALIAS ${LIBRARY_NAME})

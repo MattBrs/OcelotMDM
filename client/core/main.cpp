@@ -1,6 +1,8 @@
+#include <cstdint>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <nlohmann/json.hpp>
 #include <nlohmann/json_fwd.hpp>
 
@@ -26,24 +28,29 @@ int main() {
     try {
         auto fileContent = OcelotMDM::component::utils::readFile("conf.json");
         if (!fileContent.has_value()) {
-            Logger::getInstance().put("could find conf file");
+            Logger::getInstance().put("could not find conf file");
             exit(1);
         }
 
         conf = nlohmann::json::parse(fileContent.value());
     } catch (const nlohmann::json::exception &e) {
-        Logger::getInstance().put("could read conf file");
+        Logger::getInstance().put("could not read conf file");
         exit(1);
     }
 
-    std::string deviceName = conf["device_name"];
-    std::string apiBaseUrl = conf["api_base_url"];
-    std::string mqttHost = conf["mqtt_host"];
+    const std::uint32_t mqttPort = 1883;
+    const std::string   deviceName = conf["device_name"];
+    const std::string   apiBaseUrl = conf["api_base_url"];
+    const std::string   mqttHost = conf["mqtt_host"];
+
+    auto mqttClient =
+        std::make_shared<MqttClient>(mqttHost, mqttPort, deviceName);
+    mqttClient->connect();
 
     DbClient       dbClient("test.db");
-    UptimeService  uptimeService(mqttHost, 1883, deviceName);
+    UptimeService  uptimeService(mqttClient, deviceName);
     CommandService cmdService(
-        dbClient.getCommandDao(), mqttHost, 1883, apiBaseUrl, deviceName);
+        dbClient.getCommandDao(), mqttClient, apiBaseUrl, deviceName);
 
     while (true);
 }

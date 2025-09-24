@@ -20,10 +20,12 @@ find_package(nlohmann_json REQUIRED)
 add_subdirectory(${CMAKE_SOURCE_DIR}/components/db)
 add_subdirectory(${CMAKE_SOURCE_DIR}/components/api)
 add_subdirectory(${CMAKE_SOURCE_DIR}/components/utils)
+add_subdirectory(${CMAKE_SOURCE_DIR}/components/timer)
 add_subdirectory(${CMAKE_SOURCE_DIR}/components/logger)
 add_subdirectory(${CMAKE_SOURCE_DIR}/components/models)
 add_subdirectory(${CMAKE_SOURCE_DIR}/components/network)
 add_subdirectory(${CMAKE_SOURCE_DIR}/components/service)
+add_subdirectory(${CMAKE_SOURCE_DIR}/components/log_streamer)
 add_subdirectory(${CMAKE_SOURCE_DIR}/components/commands_impl)
 
 add_executable(${PROJECT_NAME} main.cpp)
@@ -36,5 +38,6 @@ target_link_libraries(
   OcelotMDM::Component::Service::UptimeService
   OcelotMDM::Component::Db::Client
   OcelotMDM::Component::Logger
+  OcelotMDM::Component::LogStreamer
   OcelotMDM::Component::Utils
   nlohmann_json::nlohmann_json)

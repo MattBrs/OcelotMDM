@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <string>
 
 #include "http_client.hpp"
@@ -31,7 +32,8 @@ class CommandImpl {
      *  If successful, returns logData inside props, otherwise the error
      */
     static ExecutionResult sendLogs(
-        network::MqttClient *client, const std::string &deviceID);
+        const std::shared_ptr<network::MqttClient> &client,
+        const std::string                          &deviceID);
 
    private:
 };

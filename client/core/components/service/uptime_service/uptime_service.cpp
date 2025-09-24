@@ -7,6 +7,7 @@
 #include <chrono>
 #include <ctime>
 #include <iostream>
+#include <memory>
 #include <mutex>
 #include <optional>
 #include <sstream>
@@ -16,11 +17,9 @@
 
 namespace OcelotMDM::component::service {
 UptimeService::UptimeService(
-    const std::string &mqttIp, const std::uint32_t port,
-    const std::string &deviceID)
-    : deviceID(deviceID), mqttClient(mqttIp, port, deviceID + "_uptime") {
-    this->mqttClient.connect();
-
+    const std::shared_ptr<network::MqttClient> &client,
+    const std::string                          &deviceID)
+    : deviceID(deviceID), mqttClient(client) {
     this->shouldStop.store(false);
     this->workerTh = std::thread(&UptimeService::workerFunction, this);
 }
@@ -44,7 +43,7 @@ void UptimeService::workerFunction() {
             auto              localNow = std::mktime(std::localtime(&now));
 
             ss << localNow << " " << vpnIp.value();
-            this->mqttClient.publish(
+            this->mqttClient->publish(
                 ss.str(), this->deviceID + "/online", 1, true);
         }
 

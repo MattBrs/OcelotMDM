@@ -8,6 +8,7 @@
 #include <fstream>
 #include <ios>
 #include <iostream>
+#include <mutex>
 #include <source_location>
 #include <string>
 
@@ -61,12 +62,16 @@ void Logger::putError(
 }
 
 void Logger::log(const std::string &data) {
-    this->logMtx.lock();
+    std::unique_lock<std::mutex> guard(this->logMtx);
 
     this->currentFileSize += data.size();
     std::clog << data << std::endl;
 
-    this->logMtx.unlock();
+    if (this->logQueue != nullptr) {
+        this->logQueue->emplace(data);
+    }
+
+    guard.unlock();
 
     if (this->currentFileSize > this->MAX_LOG_SIZE) {
         this->switchFile();
@@ -74,7 +79,7 @@ void Logger::log(const std::string &data) {
 }
 
 void Logger::switchFile() {
-    this->logMtx.lock();
+    std::lock_guard<std::mutex> guard(this->logMtx);
     std::clog.rdbuf(nullptr);
 
     this->output.close();
@@ -85,8 +90,11 @@ void Logger::switchFile() {
     this->output = std::ofstream(currentFileName, std::ios_base::app);
 
     std::clog.rdbuf(this->output.rdbuf());
+}
 
-    this->logMtx.unlock();
+void Logger::registerQueue(
+    const std::shared_ptr<std::queue<std::string>> &logQueue) {
+    this->logQueue = logQueue;
 }
 
 std::string Logger::generateFileName() const {
@@ -102,5 +110,4 @@ std::string Logger::generateFileName() const {
 std::string Logger::getCurrentLogName() {
     return this->currentFileName;
 }
-
 };  // namespace OcelotMDM::component

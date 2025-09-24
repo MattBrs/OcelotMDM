@@ -4,12 +4,14 @@
 #include <fstream>
 #include <ios>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "api_handler.hpp"
 #include "dto.hpp"
 #include "logger.hpp"
+#include "mqtt_client.hpp"
 #include "utils.hpp"
 
 namespace OcelotMDM::component {
@@ -51,7 +53,8 @@ CommandImpl::ExecutionResult CommandImpl::installBinary(
 }
 
 CommandImpl::ExecutionResult CommandImpl::sendLogs(
-    network::MqttClient *client, const std::string &deviceID) {
+    const std::shared_ptr<network::MqttClient> &client,
+    const std::string                          &deviceID) {
     executionResult res;
 
     Logger::getInstance().switchFile();
@@ -81,5 +84,4 @@ CommandImpl::ExecutionResult CommandImpl::sendLogs(
     res.successful = true;
     return res;
 }
-
 };  // namespace OcelotMDM::component

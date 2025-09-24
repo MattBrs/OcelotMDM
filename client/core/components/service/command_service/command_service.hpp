@@ -4,7 +4,6 @@
 
 #include <atomic>
 #include <condition_variable>
-#include <cstdint>
 #include <memory>
 #include <mutex>
 #include <queue>
@@ -16,14 +15,16 @@
 #include "command_model.hpp"
 #include "commands_impl.hpp"
 #include "http_client.hpp"
+#include "log_streamer.hpp"
 #include "mqtt_client.hpp"
+#include "timer.hpp"
 
 namespace OcelotMDM::component::service {
 class CommandService {
    public:
     CommandService(
-        const std::shared_ptr<db::CommandDao> &cmdDao,
-        const std::string &mqttIp, const std::uint32_t port,
+        const std::shared_ptr<db::CommandDao>      &cmdDao,
+        const std::shared_ptr<network::MqttClient> &mqttClient,
         const std::string &httpBaseUrl, const std::string &deviceID);
 
     ~CommandService();
@@ -31,13 +32,15 @@ class CommandService {
    private:
     const int DEQUEUE_INTR = 5000;
 
-    std::shared_ptr<db::CommandDao> cmdDao = nullptr;
+    std::shared_ptr<db::CommandDao>      cmdDao = nullptr;
+    std::shared_ptr<network::MqttClient> mqttClient = nullptr;
 
+    Timer                               timer;
     std::string                         deviceID;
     std::priority_queue<model::Command> cmdQueue;
-    network::MqttClient                 mqttClient;
     network::HttpClient                 httpClient;
     std::set<std::string>               queuedCmds;
+    LogStreamer                         logStreamer;
 
     std::thread             queueTh;
     std::condition_variable queueCv;
