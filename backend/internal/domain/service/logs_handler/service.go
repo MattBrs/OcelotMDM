@@ -16,7 +16,11 @@ type LogHandlerService struct {
 	ctx         context.Context
 }
 
-func NewService(ctx context.Context, mqttClient *ocelot_mqtt.MqttClient, logsService *logs.Service) *LogHandlerService {
+func NewService(
+	ctx context.Context,
+	mqttClient *ocelot_mqtt.MqttClient,
+	logsService *logs.Service,
+) *LogHandlerService {
 	return &LogHandlerService{
 		mqttClient:  mqttClient,
 		doneChannel: make(chan bool),
@@ -52,7 +56,8 @@ func onMsgReceived(service *LogHandlerService, msg *ocelot_mqtt.ChanMessage) {
 	}
 
 	fmt.Printf("arrived log of size %d from device %s\n", len(msg.Payload), topicParts[0])
-	err := service.logsService.AddLog(service.ctx, topicParts[0], msg.Payload)
+	// err := service.logsService.AddLog(service.ctx, topicParts[0], msg.Payload)
+	err := service.logsService.AddFile(service.ctx, topicParts[0], msg.Payload)
 
 	if err != nil {
 		fmt.Printf("error while inserting new log from device %s\n", topicParts[0])

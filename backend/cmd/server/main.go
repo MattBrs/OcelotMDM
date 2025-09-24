@@ -252,7 +252,7 @@ func main() {
 		fmt.Println("get test object data: ", string(fileData))
 	}
 
-	logService := logs.NewService(logRepo)
+	logService := logs.NewService(logRepo, s3Repo)
 	userService := user.NewService(userRepo)
 	tokenService := token.NewService(tokenRepo)
 	vpnService := vpn.NewService("http://vpn_api:8080")
