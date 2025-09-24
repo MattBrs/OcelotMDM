@@ -213,7 +213,7 @@ std::optional<CommandImpl::ExecutionResult> CommandService::executeCommand(
                 Logger::getInstance().registerQueue(nullptr);
                 this->logStreamer.stop();
             },
-            1 * 60 * 1000, false);
+            10 * 60 * 1000, false);
 
         res.successful = true;
         return res;
