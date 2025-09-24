@@ -3,6 +3,7 @@ package logs
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/MattBrs/OcelotMDM/internal/domain/file_repository"
@@ -33,11 +34,12 @@ func (s *Service) AddLog(ctx context.Context, devName string, logData []byte) er
 
 func (s *Service) AddFile(ctx context.Context, devName string, logData []byte) error {
 	currentTime := time.Now()
+	nanoStr := strconv.Itoa(currentTime.Nanosecond())
 	err := s.fileRepo.AddBinary(
 		fmt.Sprintf(
 			"%s/log_%s.txt",
 			devName,
-			currentTime.Format("20060102150405"),
+			currentTime.Format("20060102150405")+"_"+nanoStr,
 		),
 		logData,
 	)
