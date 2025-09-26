@@ -64,6 +64,7 @@ func (s *Service) EnqueueCommand(
 	}
 
 	cmd.RequiredOnline = foundCmdAct.RequiredOnlne
+	cmd.TokenRequired = foundCmdAct.TokenRequired
 
 	newCmdId, err := s.repo.Create(ctx, cmd)
 	if err != nil {

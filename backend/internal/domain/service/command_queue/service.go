@@ -1,14 +1,17 @@
 package command_queue
 
 import (
+	"bytes"
 	"context"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/MattBrs/OcelotMDM/internal/domain/command"
 	"github.com/MattBrs/OcelotMDM/internal/domain/mqtt/ocelot_mqtt"
+	"github.com/MattBrs/OcelotMDM/internal/domain/token"
 	"github.com/vmihailenco/msgpack/v5"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -18,6 +21,7 @@ type CommandQueueService struct {
 	doneChannel    chan bool
 	mqttClient     *ocelot_mqtt.MqttClient
 	commandService *command.Service
+	tokenService   *token.Service
 	ctx            context.Context
 }
 
@@ -25,6 +29,7 @@ func NewService(
 	context context.Context,
 	messageHandler *ocelot_mqtt.MqttClient,
 	cmdService *command.Service,
+	tokenService *token.Service,
 	tickerInterval time.Duration,
 ) *CommandQueueService {
 	service := CommandQueueService{
@@ -32,6 +37,7 @@ func NewService(
 		doneChannel:    make(chan bool),
 		mqttClient:     messageHandler,
 		commandService: cmdService,
+		tokenService:   tokenService,
 		ctx:            context,
 	}
 
@@ -127,11 +133,30 @@ func onFetch(s *CommandQueueService) {
 	fmt.Println("commands have beed enqueued with ID: ", queueID.Hex())
 
 	for i := range commands {
+		payload := commands[i].Payload
+		if commands[i].Payload != "" && commands[i].TokenRequired {
+			newPayload, err := attachTokenToCmd(s.ctx, s.tokenService, commands[i].Payload)
+			if err != nil {
+				fmt.Println("could not parse payload for cmd ", commands[i].Id)
+				_ = s.commandService.UpdateStatus(
+					s.ctx,
+					commands[i].Id.Hex(),
+					command.ERRORED,
+					err.Error(),
+				)
+
+				continue
+			}
+
+			payload = *newPayload
+		}
+
+		fmt.Printf("sending command with payload %s to device %s\n", payload, commands[i].DeviceName)
 		topic := commands[i].DeviceName + "/cmd"
 		encoded, err := encodeCommandMessage(
 			commands[i].Id.Hex(),
 			commands[i].CommandActionName,
-			commands[i].Payload,
+			payload,
 			commands[i].Priority,
 			commands[i].RequiredOnline,
 		)
@@ -240,4 +265,36 @@ func decodeAckMessage(
 	}
 
 	return &msg.Id, state, &msg.ErrorMsg, nil
+}
+
+func attachTokenToCmd(ctx context.Context, tokenService *token.Service, payload string) (*string, error) {
+	var cmdPayload map[string]any
+	err := json.Unmarshal([]byte(payload), &cmdPayload)
+	if err != nil {
+		return nil, err
+	}
+
+	otp, err := tokenService.GenerateNewToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	cmdPayload["otp"] = otp.Token
+
+	newPayload := createKeyValuePairs(cmdPayload)
+	return &newPayload, nil
+}
+
+func createKeyValuePairs(m map[string]any) string {
+	b := new(bytes.Buffer)
+	fmt.Fprintf(b, "{")
+	for key, value := range m {
+		fmt.Fprintf(b, "\"%s\":\"%s\",", key, value)
+	}
+
+	s := b.String()
+	s = s[:len(s)-1]
+	s = s + "}"
+
+	return s
 }

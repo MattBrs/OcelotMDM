@@ -9,4 +9,5 @@ type CommandAction struct {
 	RequiredOnlne   bool               `bson:"required_online"`
 	DefaultPriority uint               `bson:"default_priority"`
 	PayloadRequired bool               `bson:"payload_required"`
+	TokenRequired   bool               `bson:"token_required"`
 }

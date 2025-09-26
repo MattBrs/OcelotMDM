@@ -39,6 +39,7 @@ func (handler *CommandActionHandler) AddNewCommandAction(ctx *gin.Context) {
 		RequiredOnlne:   *req.RequiredOnline,
 		DefaultPriority: req.DefaultPriority,
 		PayloadRequired: *req.PayloadRequired,
+		TokenRequired:   *req.TokenRequired,
 	}
 
 	id, err := handler.service.AddCommandAction(ctx, &cmdAct)

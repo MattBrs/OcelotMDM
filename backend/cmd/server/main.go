@@ -292,6 +292,7 @@ func main() {
 		context.Background(),
 		mqttClient,
 		commandService,
+		tokenService,
 		time.Second*10,
 	)
 	commandQueueService.Start()

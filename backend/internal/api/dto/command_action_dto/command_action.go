@@ -8,6 +8,7 @@ type AddNewCommandActionRequest struct {
 	RequiredOnline  *bool  `json:"required_online" binding:"required"`
 	DefaultPriority uint   `json:"default_priority" binding:"required"`
 	PayloadRequired *bool  `json:"payload_required" binding:"required"`
+	TokenRequired   *bool  `json:"token_required" binding:"required"`
 }
 
 type AddNewCommandActionResponse struct {
