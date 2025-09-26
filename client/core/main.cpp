@@ -45,12 +45,14 @@ int main() {
 
     auto mqttClient =
         std::make_shared<MqttClient>(mqttHost, mqttPort, deviceName);
-    mqttClient->connect();
 
     DbClient       dbClient("test.db");
     UptimeService  uptimeService(mqttClient, deviceName);
     CommandService cmdService(
-        dbClient.getCommandDao(), mqttClient, apiBaseUrl, deviceName);
+        dbClient.getCommandDao(), dbClient.getBinaryDao(), mqttClient,
+        apiBaseUrl, deviceName);
+
+    mqttClient->connect();
 
     while (true);
 }

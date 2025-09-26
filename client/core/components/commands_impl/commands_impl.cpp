@@ -9,15 +9,17 @@
 #include <vector>
 
 #include "api_handler.hpp"
+#include "binary_dao.hpp"
 #include "dto.hpp"
 #include "logger.hpp"
 #include "mqtt_client.hpp"
+#include "timer.hpp"
 #include "utils.hpp"
 
 namespace OcelotMDM::component {
 CommandImpl::ExecutionResult CommandImpl::installBinary(
-    network::HttpClient *client, const std::string &name,
-    const std::string &otp) {
+    const std::shared_ptr<db::BinaryDao> &binDao, network::HttpClient *client,
+    const std::string &name, const std::string &otp) {
     executionResult res;
     std::filesystem::create_directory("bin");
     if (client == nullptr) {
@@ -80,6 +82,34 @@ CommandImpl::ExecutionResult CommandImpl::sendLogs(
 
         Logger::getInstance().put("Sent log: " + file.filename().string());
     }
+
+    res.successful = true;
+    return res;
+}
+
+CommandImpl::ExecutionResult CommandImpl::enableLiveLogging(
+    const std::shared_ptr<LogStreamer> &logStreamer,
+    const std::shared_ptr<Timer>       &timer) {
+    ExecutionResult res;
+    if (logStreamer->isRunning()) {
+        res.successful = false;
+        res.props.error = "live logging already enabled";
+        return res;
+    }
+
+    auto streamerQueue = logStreamer->getQueue();
+    Logger::getInstance().registerQueue(streamerQueue);
+    logStreamer->run();
+
+    timer->start(
+        [logStreamer]() {
+            Logger::getInstance().registerQueue(nullptr);
+
+            if (logStreamer != nullptr) {
+                logStreamer->stop();
+            }
+        },
+        10 * 60 * 1000, false);
 
     res.successful = true;
     return res;

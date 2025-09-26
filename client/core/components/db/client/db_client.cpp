@@ -7,7 +7,10 @@
 #include <memory>
 #include <string>
 
+#include "binary_dao.hpp"
 #include "command_dao.hpp"
+#include "migration1.hpp"
+#include "migration2.hpp"
 
 namespace OcelotMDM::component::db {
 DbClient::DbClient(const std::string &dbName) {
@@ -27,6 +30,7 @@ DbClient::DbClient(const std::string &dbName) {
         dbInstance, [](sqlite3 *db) { sqlite3_close(db); });
 
     migrations.emplace_back(std::make_unique<Migration1>());
+    migrations.emplace_back(std::make_unique<Migration2>());
 
     std::string err;
     int         schemaVersion = getSchemaVersion(err);
@@ -119,5 +123,9 @@ bool DbClient::executeString(const std::string &query, std::string &error) {
 
 std::shared_ptr<CommandDao> DbClient::getCommandDao() {
     return this->commandDao;
+}
+
+std::shared_ptr<BinaryDao> DbClient::getBinaryDao() {
+    return this->binaryDao;
 }
 };  // namespace OcelotMDM::component::db

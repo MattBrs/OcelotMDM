@@ -5,7 +5,9 @@ add_library(${LIBRARY_NAME} STATIC ${CMAKE_CURRENT_SOURCE_DIR}/db_client.hpp
 
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(
-  ${LIBRARY_NAME} PUBLIC SQLite::SQLite3 OcelotMDM::Component::Db::Migrations
-                         OcelotMDM::Component::Db::Dao::Command)
+  ${LIBRARY_NAME}
+  PUBLIC SQLite::SQLite3 OcelotMDM::Component::Db::Migrations
+         OcelotMDM::Component::Db::Dao::Command
+         OcelotMDM::Component::Db::Dao::Binary)
 
 add_library(OcelotMDM::Component::Db::Client ALIAS ${LIBRARY_NAME})

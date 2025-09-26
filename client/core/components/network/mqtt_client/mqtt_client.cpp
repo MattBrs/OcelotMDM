@@ -25,6 +25,7 @@ MqttClient::MqttClient(
 
     this->client.set_connected_handler([this](const std::basic_string<char> &) {
         Logger::getInstance().put("mqtt client connected successfully");
+        std::cout << "mqtt client connected" << std::endl;
 
         this->connected.store(true);
         this->queueCv.notify_one();
@@ -33,14 +34,17 @@ MqttClient::MqttClient(
     this->client.set_disconnected_handler(
         [this](const mqtt::properties &props, int reasonCode) {
             Logger::getInstance().put("mqtt client disconnected");
+            std::cout << "mqtt client disconnected: " << reasonCode
+                      << std::endl;
 
             this->connected.store(false);
             // this->reconnectCv.notify_one();
         });
 
     this->client.set_connection_lost_handler(
-        [this](const std::basic_string<char> &) {
+        [this](const std::basic_string<char> &reason) {
             Logger::getInstance().put("mqtt client lost connection");
+            std::cout << "mqtt client connection losg: " << reason << std::endl;
 
             this->connected.store(false);
             // this->reconnectCv.notify_one();

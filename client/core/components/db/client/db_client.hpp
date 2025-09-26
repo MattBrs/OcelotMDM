@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base_migration.hpp"
+#include "binary_dao.hpp"
 #include "command_dao.hpp"
 #include "migration1.hpp"
 
@@ -22,12 +23,14 @@ class DbClient {
     DbClient &operator=(const DbClient &other) = delete;
     DbClient &operator=(DbClient &&other) noexcept;
 
+    std::shared_ptr<BinaryDao>  getBinaryDao();
     std::shared_ptr<CommandDao> getCommandDao();
 
    private:
     std::shared_ptr<sqlite3>                    db;
     std::vector<std::unique_ptr<BaseMigration>> migrations;
 
+    std::shared_ptr<BinaryDao>  binaryDao = nullptr;
     std::shared_ptr<CommandDao> commandDao = nullptr;
 
     int  getSchemaVersion(std::string &error);

@@ -11,6 +11,7 @@ target_link_libraries(
          OcelotMDM::Component::Model::Command
          nlohmann_json::nlohmann_json
          OcelotMDM::Component::Db::Dao::Command
+         OcelotMDM::Component::Db::Dao::Binary
          OcelotMDM::Component::CommandsImpl
          OcelotMDM::Component::Logger
          OcelotMDM::Component::LogStreamer

@@ -1,5 +1,6 @@
 #include "api_handler.hpp"
 
+#include <iostream>
 #include <nlohmann/json.hpp>
 #include <nlohmann/json_fwd.hpp>
 #include <optional>
@@ -38,6 +39,7 @@ std::optional<component::Api::Dto::GetBinaryRes> getBinary(
         getBinRes.version = body["binary_version"];
         getBinRes.binaryData = body["binary_data"];
     } catch (nlohmann::json::exception &e) {
+        std::cout << "errored on res contruction: " << e.what() << std::endl;
         return std::nullopt;
     }
 

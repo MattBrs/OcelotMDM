@@ -7,6 +7,7 @@
 #include <functional>
 #include <iomanip>
 #include <ios>
+#include <iostream>
 #include <memory>
 #include <mutex>
 #include <nlohmann/json_fwd.hpp>
@@ -17,6 +18,7 @@
 #include <thread>
 #include <vector>
 
+#include "binary_dao.hpp"
 #include "command_dao.hpp"
 #include "command_model.hpp"
 #include "commands_impl.hpp"
@@ -29,13 +31,16 @@
 namespace OcelotMDM::component::service {
 CommandService::CommandService(
     const std::shared_ptr<db::CommandDao>      &cmdDao,
+    const std::shared_ptr<db::BinaryDao>       &binDao,
     const std::shared_ptr<network::MqttClient> &mqttClient,
     const std::string &httpBaseUrl, const std::string &deviceID)
     : cmdDao(cmdDao),
+      binDao(binDao),
       mqttClient(mqttClient),
       deviceID(deviceID),
       httpClient(httpBaseUrl),
-      logStreamer(mqttClient, deviceID) {
+      timer(std::make_shared<Timer>()),
+      logStreamer(std::make_shared<LogStreamer>(mqttClient, deviceID)) {
     auto queuedCommands = this->cmdDao->getQueuedCommands();
     if (queuedCommands.has_value()) {
         for (auto &cmd : queuedCommands.value()) {
@@ -185,8 +190,16 @@ std::optional<CommandImpl::ExecutionResult> CommandService::executeCommand(
             return std::nullopt;
         }
 
-        auto res = CommandImpl::installBinary(
-            &this->httpClient, payload["name"], payload["otp"]);
+        CommandImpl::ExecutionResult res;
+        try {
+            res = CommandImpl::installBinary(
+                this->binDao, &this->httpClient, payload["name"],
+                payload["otp"]);
+        } catch (nlohmann::json::exception &e) {
+            res.successful = false;
+            res.props.error = "could not parse payload";
+        }
+
         return res;
     }
 
@@ -197,25 +210,13 @@ std::optional<CommandImpl::ExecutionResult> CommandService::executeCommand(
 
     if (cmd.getAction().compare("enable_live_logging") == 0) {
         CommandImpl::ExecutionResult res;
-        if (this->logStreamer.isRunning()) {
+        if (this->logStreamer == nullptr || this->timer == nullptr) {
             res.successful = false;
-            res.props.error = "live logging already enabled";
-
+            res.props.error = "streamer or timer are not initialized";
             return res;
         }
 
-        auto streamerQueue = this->logStreamer.getQueue();
-        Logger::getInstance().registerQueue(streamerQueue);
-        this->logStreamer.run();
-
-        this->timer.start(
-            [this]() {
-                Logger::getInstance().registerQueue(nullptr);
-                this->logStreamer.stop();
-            },
-            10 * 60 * 1000, false);
-
-        res.successful = true;
+        res = CommandImpl::enableLiveLogging(this->logStreamer, this->timer);
         return res;
     }
 

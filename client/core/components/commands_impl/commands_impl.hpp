@@ -3,8 +3,11 @@
 #include <memory>
 #include <string>
 
+#include "binary_dao.hpp"
 #include "http_client.hpp"
+#include "log_streamer.hpp"
 #include "mqtt_client.hpp"
+#include "timer.hpp"
 
 namespace OcelotMDM::component {
 class CommandImpl {
@@ -25,6 +28,7 @@ class CommandImpl {
      * props, otherwise the error
      */
     static ExecutionResult installBinary(
+        const std::shared_ptr<db::BinaryDao> &binDao,
         network::HttpClient *client, const std::string &name,
         const std::string &otp);
 
@@ -34,6 +38,10 @@ class CommandImpl {
     static ExecutionResult sendLogs(
         const std::shared_ptr<network::MqttClient> &client,
         const std::string                          &deviceID);
+
+    static ExecutionResult enableLiveLogging(
+        const std::shared_ptr<LogStreamer> &logStreamer,
+        const std::shared_ptr<Timer>       &timer);
 
    private:
 };

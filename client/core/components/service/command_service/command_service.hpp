@@ -11,6 +11,7 @@
 #include <string>
 #include <thread>
 
+#include "binary_dao.hpp"
 #include "command_dao.hpp"
 #include "command_model.hpp"
 #include "commands_impl.hpp"
@@ -24,6 +25,7 @@ class CommandService {
    public:
     CommandService(
         const std::shared_ptr<db::CommandDao>      &cmdDao,
+        const std::shared_ptr<db::BinaryDao>       &binDao,
         const std::shared_ptr<network::MqttClient> &mqttClient,
         const std::string &httpBaseUrl, const std::string &deviceID);
 
@@ -32,15 +34,16 @@ class CommandService {
    private:
     const int DEQUEUE_INTR = 5000;
 
+    std::shared_ptr<Timer>               timer = nullptr;
     std::shared_ptr<db::CommandDao>      cmdDao = nullptr;
+    std::shared_ptr<db::BinaryDao>       binDao = nullptr;
     std::shared_ptr<network::MqttClient> mqttClient = nullptr;
+    std::shared_ptr<LogStreamer>         logStreamer = nullptr;
 
-    Timer                               timer;
     std::string                         deviceID;
     std::priority_queue<model::Command> cmdQueue;
     network::HttpClient                 httpClient;
     std::set<std::string>               queuedCmds;
-    LogStreamer                         logStreamer;
 
     std::thread             queueTh;
     std::condition_variable queueCv;
