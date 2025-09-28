@@ -85,7 +85,7 @@ func (h *BinaryHandler) GetBinary(ctx *gin.Context) {
 			httpStatus = http.StatusUnauthorized
 		default:
 			fmt.Println("error on getBinary: ", err.Error())
-			response.Error = "generic error"
+			response.Error = err.Error()
 			httpStatus = http.StatusInternalServerError
 
 		}
@@ -95,7 +95,7 @@ func (h *BinaryHandler) GetBinary(ctx *gin.Context) {
 
 	response := binary_dto.GetBinaryResponse{
 		BinaryName: binaryName,
-		Data:       string(data),
+		Data:       data,
 		Version:    *version,
 	}
 

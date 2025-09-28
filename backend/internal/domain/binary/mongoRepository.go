@@ -33,10 +33,13 @@ func (repo MongoBinaryRepository) Get(
 	binaryName string,
 ) (*Binary, error) {
 	filter := bson.D{{Key: "name", Value: binaryName}}
+	fmt.Printf("Running query: %+v\n", filter)
+
 	var binary Binary
 	err := repo.collection.FindOne(ctx, filter).Decode(&binary)
 
 	if err != nil {
+		fmt.Println("could not find binary with name: ", binaryName)
 		return nil, err
 	}
 
