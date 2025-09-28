@@ -1,5 +1,6 @@
 #include "api_handler.hpp"
 
+#include <fstream>
 #include <iostream>
 #include <nlohmann/json.hpp>
 #include <nlohmann/json_fwd.hpp>

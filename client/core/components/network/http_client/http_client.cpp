@@ -3,6 +3,7 @@
 #include <curl/curl.h>
 #include <curl/easy.h>
 
+#include <fstream>
 #include <iostream>
 #include <list>
 #include <memory>
@@ -35,10 +36,10 @@ httpResponse HttpClient::get(
         return {std::nullopt, "curl handle not initialized", -1};
     }
 
-    std::stringstream resData;
-    char              errorBuffer[CURL_ERROR_SIZE];
-    auto              curlHeader = HttpClient::generateHeader(header);
-    auto              url = this->buildUrl(this->baseUrl, path, queryParams);
+    std::string resData;
+    char        errorBuffer[CURL_ERROR_SIZE];
+    auto        curlHeader = HttpClient::generateHeader(header);
+    auto        url = this->buildUrl(this->baseUrl, path, queryParams);
 
     Logger::getInstance().put("full http url: " + url);
 
@@ -57,9 +58,10 @@ httpResponse HttpClient::get(
     auto res = curl_easy_perform(this->curlHandle);
 
     httpResponse response;
+
     switch (res) {
         case CURLcode::CURLE_OK:
-            response.data = resData.str();
+            response.data = resData;
             curl_easy_getinfo(
                 this->curlHandle, CURLINFO_RESPONSE_CODE, &response.statusCode);
             break;
@@ -80,10 +82,10 @@ httpResponse HttpClient::post(
         return {std::nullopt, "curl handle not initialized", -1};
     }
 
-    std::stringstream resData;
-    char              errorBuffer[CURL_ERROR_SIZE];
-    auto              curlHeader = HttpClient::generateHeader(header);
-    auto              url = this->buildUrl(this->baseUrl, path, queryParams);
+    std::string resData;
+    char        errorBuffer[CURL_ERROR_SIZE];
+    auto        curlHeader = HttpClient::generateHeader(header);
+    auto        url = this->buildUrl(this->baseUrl, path, queryParams);
 
     errorBuffer[0] = 0;
 
@@ -102,7 +104,7 @@ httpResponse HttpClient::post(
     httpResponse response;
     switch (res) {
         case CURLcode::CURLE_OK:
-            response.data = resData.str();
+            response.data = resData;
             curl_easy_getinfo(
                 this->curlHandle, CURLINFO_RESPONSE_CODE, &response.statusCode);
         default:
@@ -132,7 +134,6 @@ std::string HttpClient::buildUrl(
     }
 
     completePath.append(queryParams.value());
-    std::cout << "finished building header" << std::endl;
     return completePath;
 }
 
@@ -160,9 +161,9 @@ curl_slist *HttpClient::generateHeader(const std::list<std::string> &header) {
 
 size_t HttpClient::write_callback(
     char *ptr, size_t size, size_t nmemb, void *userdata) {
-    auto               realSize = size * nmemb;
-    std::stringstream *data = static_cast<std::stringstream *>(userdata);
-    (*data) << ptr;
+    auto         realSize = size * nmemb;
+    std::string &data = *static_cast<std::string *>(userdata);
+    data.append(static_cast<char *>(ptr), realSize);
     return realSize;
 }
 };  // namespace OcelotMDM::component::network

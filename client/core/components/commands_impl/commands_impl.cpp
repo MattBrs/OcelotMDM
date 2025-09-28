@@ -50,6 +50,11 @@ CommandImpl::ExecutionResult CommandImpl::installBinary(
     out.write(reinterpret_cast<const char *>(binary.data()), binary.size());
     out.close();
 
+    std::filesystem::permissions(
+        appPath,
+        std::filesystem::perms::owner_all | std::filesystem::perms::group_all,
+        std::filesystem::perm_options::add);
+
     auto insertRes = binDao->addBinary(name, appPath);
     if (!insertRes.has_value() || !insertRes.value()) {
         res.successful = false;
