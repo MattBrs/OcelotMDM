@@ -57,7 +57,7 @@ func (repo *S3Repository) AddBinary(
 ) error {
 	_, err := repo.s3Client.PutObject(repo.ctx, &s3.PutObjectInput{
 		Bucket: aws.String(repo.bucketName),
-		Key:    aws.String(fileName),
+		Key:    aws.String("bin/" + fileName),
 		Body:   bytes.NewReader(fileData),
 	})
 
@@ -69,7 +69,7 @@ func (repo *S3Repository) GetBinary(
 ) ([]byte, error) {
 	result, err := repo.s3Client.GetObject(repo.ctx, &s3.GetObjectInput{
 		Bucket: &repo.bucketName,
-		Key:    aws.String(fileName),
+		Key:    aws.String("bin/" + fileName),
 	})
 
 	if err != nil {
