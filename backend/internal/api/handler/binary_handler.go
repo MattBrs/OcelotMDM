@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"net/http"
@@ -93,9 +94,10 @@ func (h *BinaryHandler) GetBinary(ctx *gin.Context) {
 		return
 	}
 
+	encodedData := base64.StdEncoding.EncodeToString(data)
 	response := binary_dto.GetBinaryResponse{
 		BinaryName: binaryName,
-		Data:       data,
+		Data:       encodedData,
 		Version:    *version,
 	}
 
