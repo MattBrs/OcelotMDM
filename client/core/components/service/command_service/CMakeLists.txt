@@ -16,6 +16,8 @@ target_link_libraries(
          OcelotMDM::Component::Logger
          OcelotMDM::Component::LogStreamer
          OcelotMDM::Component::Timer
-         OcelotMDM::Component::Utils)
+         OcelotMDM::Component::Utils
+         OcelotMDM::Component::Service::LinuxSpawnerService
+         OcelotMDM::Component::Service::AndroidSpawnerService)
 
 add_library(OcelotMDM::Component::Service::CommandService ALIAS ${LIBRARY_NAME})

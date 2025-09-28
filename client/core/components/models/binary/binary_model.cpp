@@ -6,15 +6,15 @@ Binary::Binary(const std::string &name, const std::string &path) {
     this->path = path;
 }
 
-std::string Binary::getId() {
+std::string Binary::getId() const {
     return this->id;
 }
 
-std::string Binary::getName() {
+std::string Binary::getName() const {
     return this->name;
 }
 
-std::string Binary::getPath() {
+std::string Binary::getPath() const {
     return this->path;
 }
 

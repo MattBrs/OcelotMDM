@@ -40,6 +40,7 @@ DbClient::DbClient(const std::string &dbName) {
     }
 
     this->commandDao = std::make_shared<CommandDao>(this->db);
+    this->binaryDao = std::make_shared<BinaryDao>(this->db);
 }
 
 DbClient &DbClient::operator=(DbClient &&other) noexcept {

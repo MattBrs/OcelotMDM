@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+#include "binary_model.hpp"
+
 namespace OcelotMDM::component::db {
 BinaryDao::BinaryDao(const std::shared_ptr<sqlite3> &dbConn) {
     this->dbConn = dbConn;
@@ -48,8 +50,6 @@ std::optional<bool> BinaryDao::addBinary(
     }
 
     return true;
-
-    return true;
 }
 
 std::optional<bool> BinaryDao::removeBinary(const std::string &name) {
@@ -84,7 +84,7 @@ std::optional<bool> BinaryDao::removeBinary(const std::string &name) {
     return true;
 }
 
-std::optional<std::vector<std::string>> BinaryDao::listBinaries() {
+std::optional<std::vector<model::Binary>> BinaryDao::listBinaries() {
     if (this->dbConn == nullptr) {
         this->error = "db conn is not initialized";
         return std::nullopt;
@@ -103,7 +103,7 @@ std::optional<std::vector<std::string>> BinaryDao::listBinaries() {
         return std::nullopt;
     }
 
-    std::vector<std::string> binList;
+    std::vector<model::Binary> binList;
     while ((ret = sqlite3_step(stmt)) == SQLITE_ROW) {
         auto name =
             reinterpret_cast<const char *>(sqlite3_column_text(stmt, 2));

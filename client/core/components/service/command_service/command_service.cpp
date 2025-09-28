@@ -23,6 +23,7 @@
 #include "command_model.hpp"
 #include "commands_impl.hpp"
 #include "http_client.hpp"
+#include "linux_spawner_service.hpp"
 #include "log_streamer.hpp"
 #include "logger.hpp"
 #include "mqtt_client.hpp"
@@ -34,13 +35,16 @@ CommandService::CommandService(
     const std::shared_ptr<db::BinaryDao>       &binDao,
     const std::shared_ptr<network::MqttClient> &mqttClient,
     const std::string &httpBaseUrl, const std::string &deviceID)
-    : cmdDao(cmdDao),
+    : timer(std::make_shared<Timer>()),
+      cmdDao(cmdDao),
       binDao(binDao),
       mqttClient(mqttClient),
+      logStreamer(std::make_shared<LogStreamer>(mqttClient, deviceID)),
       deviceID(deviceID),
-      httpClient(httpBaseUrl),
-      timer(std::make_shared<Timer>()),
-      logStreamer(std::make_shared<LogStreamer>(mqttClient, deviceID)) {
+      httpClient(std::make_shared<network::HttpClient>(httpBaseUrl)) {
+    // if linux use LinuxSpawner, else use AndroidSpawner
+    this->spawnerService = std::make_unique<LinuxSpawerService>(this->binDao);
+
     auto queuedCommands = this->cmdDao->getQueuedCommands();
     if (queuedCommands.has_value()) {
         for (auto &cmd : queuedCommands.value()) {
@@ -193,8 +197,10 @@ std::optional<CommandImpl::ExecutionResult> CommandService::executeCommand(
         CommandImpl::ExecutionResult res;
         try {
             res = CommandImpl::installBinary(
-                this->binDao, &this->httpClient, payload["name"],
+                this->binDao, this->httpClient, payload["name"],
                 payload["otp"]);
+
+            this->spawnerService->runBinary(res.props.applicationPath);
         } catch (nlohmann::json::exception &e) {
             res.successful = false;
             res.props.error = "could not parse payload";

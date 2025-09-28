@@ -6,6 +6,8 @@
 #include <optional>
 #include <string>
 #include <vector>
+
+#include "binary_model.hpp"
 namespace OcelotMDM::component::db {
 class BinaryDao {
    public:
@@ -14,7 +16,7 @@ class BinaryDao {
     std::optional<bool> addBinary(
         const std::string &name, const std::string &path);
     std::optional<bool> removeBinary(const std::string &name);
-    std::optional<std::vector<std::string>> listBinaries();
+    std::optional<std::vector<model::Binary>> listBinaries();
 
     std::string getError();
 

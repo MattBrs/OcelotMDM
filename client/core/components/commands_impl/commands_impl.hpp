@@ -29,8 +29,8 @@ class CommandImpl {
      */
     static ExecutionResult installBinary(
         const std::shared_ptr<db::BinaryDao> &binDao,
-        network::HttpClient *client, const std::string &name,
-        const std::string &otp);
+        std::shared_ptr<network::HttpClient> &httpClient,
+        const std::string &name, const std::string &otp);
 
     /**
      *  If successful, returns logData inside props, otherwise the error

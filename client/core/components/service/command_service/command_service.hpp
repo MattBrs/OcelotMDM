@@ -18,6 +18,7 @@
 #include "http_client.hpp"
 #include "log_streamer.hpp"
 #include "mqtt_client.hpp"
+#include "spawner_service.hpp"
 #include "timer.hpp"
 
 namespace OcelotMDM::component::service {
@@ -37,12 +38,13 @@ class CommandService {
     std::shared_ptr<Timer>               timer = nullptr;
     std::shared_ptr<db::CommandDao>      cmdDao = nullptr;
     std::shared_ptr<db::BinaryDao>       binDao = nullptr;
+    std::shared_ptr<network::HttpClient> httpClient = nullptr;
     std::shared_ptr<network::MqttClient> mqttClient = nullptr;
     std::shared_ptr<LogStreamer>         logStreamer = nullptr;
+    std::unique_ptr<SpawnerService>      spawnerService = nullptr;
 
     std::string                         deviceID;
     std::priority_queue<model::Command> cmdQueue;
-    network::HttpClient                 httpClient;
     std::set<std::string>               queuedCmds;
 
     std::thread             queueTh;

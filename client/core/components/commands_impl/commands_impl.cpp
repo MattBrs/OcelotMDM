@@ -18,11 +18,12 @@
 
 namespace OcelotMDM::component {
 CommandImpl::ExecutionResult CommandImpl::installBinary(
-    const std::shared_ptr<db::BinaryDao> &binDao, network::HttpClient *client,
-    const std::string &name, const std::string &otp) {
+    const std::shared_ptr<db::BinaryDao> &binDao,
+    std::shared_ptr<network::HttpClient> &httpClient, const std::string &name,
+    const std::string &otp) {
     executionResult res;
     std::filesystem::create_directory("bin");
-    if (client == nullptr) {
+    if (httpClient == nullptr) {
         res.props.error = "http client not initialized";
         return res;
     }
@@ -31,7 +32,7 @@ CommandImpl::ExecutionResult CommandImpl::installBinary(
     Logger::getInstance().put(name);
     Logger::getInstance().put(otp);
     auto httpRes = Api::Handler::getBinary(
-        client,
+        httpClient.get(),
         component::Api::Dto::GetBinaryReq{.binaryName = name, .otp = otp});
     Logger::getInstance().put("after http call");
 
@@ -41,11 +42,20 @@ CommandImpl::ExecutionResult CommandImpl::installBinary(
         return res;
     }
 
-    auto          appPath = std::string{"bin/"}.append(name);
-    std::ofstream out(appPath);
+    auto binary = utils::base64_decode(httpRes.value().binaryData);
 
-    out << httpRes.value().binaryData;
+    auto          appPath = std::string{"bin/"}.append(name);
+    std::ofstream out(appPath, std::ios::out | std::ios::binary);
+
+    out.write(reinterpret_cast<const char *>(binary.data()), binary.size());
     out.close();
+
+    auto insertRes = binDao->addBinary(name, appPath);
+    if (!insertRes.has_value() || !insertRes.value()) {
+        res.successful = false;
+        res.props.error = binDao->getError();
+        return res;
+    }
 
     res.successful = true;
     res.props.applicationName = name;
