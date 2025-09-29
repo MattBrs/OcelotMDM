@@ -13,6 +13,7 @@
 #include "dto.hpp"
 #include "logger.hpp"
 #include "mqtt_client.hpp"
+#include "spawner_service.hpp"
 #include "timer.hpp"
 #include "utils.hpp"
 
@@ -70,9 +71,42 @@ CommandImpl::ExecutionResult CommandImpl::installBinary(
 }
 
 CommandImpl::ExecutionResult CommandImpl::startBinary(
-    const std::shared_ptr<db::BinaryDao> &binDao, const std::string &name) {
+    const std::shared_ptr<db::BinaryDao>           &binDao,
+    const std::shared_ptr<service::SpawnerService> &spawnerService,
+    const std::string                              &name) {
     CommandImpl::ExecutionResult res;
 
+    auto binaries = binDao->listBinaries();
+    if (!binaries.has_value()) {
+        res.successful = false;
+        res.props.error = binDao->getError();
+        return res;
+    }
+
+    std::string path;
+    bool        found = false;
+    for (auto &bin : binaries.value()) {
+        if (bin.getName().compare(name) == 0) {
+            found = true;
+            path = bin.getPath();
+            break;
+        }
+    }
+
+    if (!found) {
+        res.successful = false;
+        res.props.error = "target binary was not found";
+        return res;
+    }
+
+    auto ret = spawnerService->runBinary(path);
+    if (ret == -1) {
+        res.successful = false;
+        res.props.error = "an error occurred while running the binary";
+        return res;
+    }
+
+    res.successful = true;
     return res;
 }
 

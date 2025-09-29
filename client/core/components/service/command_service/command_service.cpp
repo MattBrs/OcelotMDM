@@ -43,7 +43,7 @@ CommandService::CommandService(
       deviceID(deviceID),
       httpClient(std::make_shared<network::HttpClient>(httpBaseUrl)) {
     // if linux use LinuxSpawner, else use AndroidSpawner
-    this->spawnerService = std::make_unique<LinuxSpawerService>(this->binDao);
+    this->spawnerService = std::make_shared<LinuxSpawerService>(this->binDao);
 
     auto queuedCommands = this->cmdDao->getQueuedCommands();
     if (queuedCommands.has_value()) {
@@ -238,6 +238,23 @@ std::optional<CommandImpl::ExecutionResult> CommandService::executeCommand(
     }
 
     if (cmd.getAction().compare("start_binary") == 0) {
+        nlohmann::json payload;
+        try {
+            payload = nlohmann::json::parse(cmd.getPayload());
+        } catch (nlohmann::json::exception &e) {
+            return std::nullopt;
+        }
+
+        CommandImpl::ExecutionResult res;
+        try {
+            res = CommandImpl::startBinary(
+                this->binDao, this->spawnerService, payload["name"]);
+        } catch (nlohmann::json::exception &e) {
+            res.successful = false;
+            res.props.error = "could not parse payload";
+        }
+
+        return res;
     }
 
     if (cmd.getAction().compare("uninstall_binary") == 0) {

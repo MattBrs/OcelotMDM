@@ -15,6 +15,7 @@ target_link_libraries(
          OcelotMDM::Component::Utils
          OcelotMDM::Component::Timer
          OcelotMDM::Component::LogStreamer
+         OcelotMDM::Component::Service::SpawnerService
          OcelotMDM::Component::Db::Dao::Binary)
 
 add_library(OcelotMDM::Component::CommandsImpl ALIAS ${LIBRARY_NAME})

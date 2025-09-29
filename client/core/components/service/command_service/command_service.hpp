@@ -41,7 +41,7 @@ class CommandService {
     std::shared_ptr<network::HttpClient> httpClient = nullptr;
     std::shared_ptr<network::MqttClient> mqttClient = nullptr;
     std::shared_ptr<LogStreamer>         logStreamer = nullptr;
-    std::unique_ptr<SpawnerService>      spawnerService = nullptr;
+    std::shared_ptr<SpawnerService>      spawnerService = nullptr;
 
     std::string                         deviceID;
     std::priority_queue<model::Command> cmdQueue;

@@ -7,6 +7,7 @@
 #include "http_client.hpp"
 #include "log_streamer.hpp"
 #include "mqtt_client.hpp"
+#include "spawner_service.hpp"
 #include "timer.hpp"
 
 namespace OcelotMDM::component {
@@ -38,7 +39,9 @@ class CommandImpl {
      * cause of error
      */
     static ExecutionResult startBinary(
-        const std::shared_ptr<db::BinaryDao> &binDao, const std::string &name);
+        const std::shared_ptr<db::BinaryDao>           &binDao,
+        const std::shared_ptr<service::SpawnerService> &spawnerService,
+        const std::string                              &name);
 
     /**
      *  If successful, starts the target binary on the device, otherwise the
