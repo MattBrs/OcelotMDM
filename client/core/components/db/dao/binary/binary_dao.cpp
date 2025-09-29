@@ -106,9 +106,9 @@ std::optional<std::vector<model::Binary>> BinaryDao::listBinaries() {
     std::vector<model::Binary> binList;
     while ((ret = sqlite3_step(stmt)) == SQLITE_ROW) {
         auto name =
-            reinterpret_cast<const char *>(sqlite3_column_text(stmt, 2));
+            reinterpret_cast<const char *>(sqlite3_column_text(stmt, 1));
         auto path =
-            reinterpret_cast<const char *>(sqlite3_column_text(stmt, 3));
+            reinterpret_cast<const char *>(sqlite3_column_text(stmt, 2));
 
         binList.emplace_back(name, path);
     }

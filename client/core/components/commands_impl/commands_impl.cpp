@@ -69,6 +69,39 @@ CommandImpl::ExecutionResult CommandImpl::installBinary(
     return res;
 }
 
+CommandImpl::ExecutionResult CommandImpl::startBinary(
+    const std::shared_ptr<db::BinaryDao> &binDao, const std::string &name) {
+    CommandImpl::ExecutionResult res;
+
+    return res;
+}
+
+CommandImpl::ExecutionResult CommandImpl::uninstallBinary(
+    const std::shared_ptr<db::BinaryDao> &binDao, const std::string &name) {
+    CommandImpl::ExecutionResult res;
+
+    return res;
+}
+
+CommandImpl::ExecutionResult CommandImpl::listBinaries(
+    const std::shared_ptr<db::BinaryDao> &binDao) {
+    CommandImpl::ExecutionResult res;
+    auto                         binaries = binDao->listBinaries();
+    if (!binaries.has_value()) {
+        res.successful = false;
+        res.props.error = binDao->getError();
+        return res;
+    }
+
+    res.props.data = "";
+    for (auto &bin : binaries.value()) {
+        res.props.data.append(bin.getName()).append("\n");
+    }
+
+    Logger::getInstance().put(res.props.data);
+    return res;
+}
+
 CommandImpl::ExecutionResult CommandImpl::sendLogs(
     const std::shared_ptr<network::MqttClient> &client,
     const std::string                          &deviceID) {

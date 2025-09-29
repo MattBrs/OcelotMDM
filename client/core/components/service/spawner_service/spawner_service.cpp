@@ -13,8 +13,8 @@ void SpawnerService::startBinaries() {
     auto binaries = this->binDao->listBinaries();
     if (binaries.has_value()) {
         for (const auto &bin : binaries.value()) {
-            std::cout << "found binary: " << bin.getName() << std::endl;
-            this->runBinary(bin.getName());
+            std::cout << "found binary: " << bin.getPath() << std::endl;
+            this->runBinary(bin.getPath());
         }
     }
 }

@@ -210,8 +210,7 @@ std::optional<CommandImpl::ExecutionResult> CommandService::executeCommand(
     }
 
     if (cmd.getAction().compare("send_logs") == 0) {
-        auto res = CommandImpl::sendLogs(this->mqttClient, this->deviceID);
-        return res;
+        return CommandImpl::sendLogs(this->mqttClient, this->deviceID);
     }
 
     if (cmd.getAction().compare("enable_live_logging") == 0) {
@@ -236,6 +235,16 @@ std::optional<CommandImpl::ExecutionResult> CommandService::executeCommand(
 
         res = CommandImpl::disableLiveLogging(this->logStreamer, this->timer);
         return res;
+    }
+
+    if (cmd.getAction().compare("start_binary") == 0) {
+    }
+
+    if (cmd.getAction().compare("uninstall_binary") == 0) {
+    }
+
+    if (cmd.getAction().compare("list_binaries") == 0) {
+        return CommandImpl::listBinaries(this->binDao);
     }
 
     return std::nullopt;
