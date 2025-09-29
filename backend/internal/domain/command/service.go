@@ -2,9 +2,11 @@ package command
 
 import (
 	"context"
+	"time"
 
 	"github.com/MattBrs/OcelotMDM/internal/domain/command_action"
 	"github.com/MattBrs/OcelotMDM/internal/domain/device"
+	webhook "github.com/MattBrs/OcelotMDM/internal/domain/service/web_hook"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -12,6 +14,7 @@ type Service struct {
 	repo                 Repository
 	deviceServie         *device.Service
 	commandActionService *command_action.Service
+	whService            *webhook.WebHookService
 }
 
 type CommandFilter struct {
@@ -34,11 +37,13 @@ func NewService(
 	repo Repository,
 	deviceService *device.Service,
 	commandActionService *command_action.Service,
+	whService *webhook.WebHookService,
 ) *Service {
 	return &Service{
 		repo:                 repo,
 		deviceServie:         deviceService,
 		commandActionService: commandActionService,
+		whService:            whService,
 	}
 }
 
@@ -114,12 +119,28 @@ func (s *Service) UpdateStatus(
 		return err
 	}
 
+	whEvent := webhook.Event{
+		CommandID:        id,
+		DeviceName:       foundCommand.DeviceName,
+		Status:           newStatus.Status,
+		PreviousStatus:   foundCommand.Status.Status,
+		Data:             data,
+		ErrorDescription: errorDesc,
+		UpdatedAt:        time.Now(),
+		CallbackURL:      foundCommand.CallbackURL,
+		CallbackSecret:   foundCommand.CallbackSecret,
+	}
+
 	foundCommand.Status = newStatus
 	foundCommand.ErrorDescription = errorDesc
 	foundCommand.Data = data
 	err = s.repo.Update(ctx, foundCommand)
 	if err != nil {
 		return err
+	}
+
+	if foundCommand.CallbackURL != nil {
+		s.whService.Publish(whEvent)
 	}
 
 	return nil

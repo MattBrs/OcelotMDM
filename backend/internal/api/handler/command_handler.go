@@ -91,6 +91,8 @@ func (handler *CommandHandler) AddNewCommand(ctx *gin.Context) {
 		Priority:          req.Priority,
 		RequestedBy:       currentUser.(*user.User).Username,
 		ErrorDescription:  "",
+		CallbackURL:       req.CallbackURL,
+		CallbackSecret:    req.CallbackSecret,
 	}
 	id, err := handler.service.EnqueueCommand(ctx, &cmd)
 	if err != nil {

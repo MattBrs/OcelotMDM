@@ -3,10 +3,12 @@ package command_dto
 import "github.com/MattBrs/OcelotMDM/internal/domain/command"
 
 type AddNewCommadRequest struct {
-	CommandActionName string `json:"command_action_name" binding:"required"`
-	DeviceName        string `json:"device_name" binding:"required"`
-	Payload           string `json:"payload"`
-	Priority          uint   `json:"priority" binding:"required"`
+	CommandActionName string  `json:"command_action_name" binding:"required"`
+	DeviceName        string  `json:"device_name" binding:"required"`
+	Payload           string  `json:"payload"`
+	Priority          uint    `json:"priority" binding:"required"`
+	CallbackURL       *string `json:"callback_url,omitempty"`
+	CallbackSecret    *string `json:"callback_secret,omitempty"`
 }
 
 type AddNewCommadResponse struct {

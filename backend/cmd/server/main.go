@@ -7,6 +7,10 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
+	"strconv"
+	"time"
+
 	docs "github.com/MattBrs/OcelotMDM/docs"
 	"github.com/MattBrs/OcelotMDM/internal/api/handler"
 	"github.com/MattBrs/OcelotMDM/internal/api/interceptor"
@@ -20,6 +24,7 @@ import (
 	"github.com/MattBrs/OcelotMDM/internal/domain/service/command_queue"
 	"github.com/MattBrs/OcelotMDM/internal/domain/service/logs_handler"
 	"github.com/MattBrs/OcelotMDM/internal/domain/service/uptime"
+	webhook "github.com/MattBrs/OcelotMDM/internal/domain/service/web_hook"
 	"github.com/MattBrs/OcelotMDM/internal/domain/token"
 	"github.com/MattBrs/OcelotMDM/internal/domain/user"
 	"github.com/MattBrs/OcelotMDM/internal/domain/vpn"
@@ -29,9 +34,6 @@ import (
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"os"
-	"strconv"
-	"time"
 )
 
 type Handlers struct {
@@ -254,6 +256,7 @@ func main() {
 		commandActionCol,
 	)
 
+	webhookService := webhook.NewService(context.Background(), 200)
 	logService := logs.NewService(logRepo, s3Repo)
 	userService := user.NewService(userRepo)
 	tokenService := token.NewService(tokenRepo)
@@ -270,6 +273,7 @@ func main() {
 		commandRepo,
 		deviceService,
 		commandActionService,
+		webhookService,
 	)
 
 	handlers := Handlers{

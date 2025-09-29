@@ -86,6 +86,10 @@ definitions:
     type: object
   github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.AddNewCommadRequest:
     properties:
+      callback_secret:
+        type: string
+      callback_url:
+        type: string
       command_action_name:
         type: string
       device_name:
@@ -234,6 +238,10 @@ definitions:
     type: object
   github_com_MattBrs_OcelotMDM_internal_domain_command.Command:
     properties:
+      callbackSecret:
+        type: string
+      callbackURL:
+        type: string
       commandActionName:
         type: string
       completedAt:

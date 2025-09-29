@@ -52,4 +52,6 @@ type Command struct {
 	RequiredOnline    bool               `bson:"required_online,omitempty"`
 	TokenRequired     bool               `bson:"token_required,omitempty"`
 	Data              string             `bson:"data,omitempty"`
+	CallbackURL       *string            `bson:"callback_url,omitempty"`
+	CallbackSecret    *string            `bson:"callback_secret,omitempty"`
 }

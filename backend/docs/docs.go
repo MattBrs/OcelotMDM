@@ -920,6 +920,12 @@ const docTemplate = `{
                 "priority"
             ],
             "properties": {
+                "callback_secret": {
+                    "type": "string"
+                },
+                "callback_url": {
+                    "type": "string"
+                },
                 "command_action_name": {
                     "type": "string"
                 },
@@ -1139,6 +1145,12 @@ const docTemplate = `{
         "github_com_MattBrs_OcelotMDM_internal_domain_command.Command": {
             "type": "object",
             "properties": {
+                "callbackSecret": {
+                    "type": "string"
+                },
+                "callbackURL": {
+                    "type": "string"
+                },
                 "commandActionName": {
                     "type": "string"
                 },
