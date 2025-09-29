@@ -193,3 +193,22 @@ func (s *Service) Delete(ctx context.Context, id string) error {
 
 	return nil
 }
+
+func (s *Service) GetAvailableCmdActions(
+	ctx context.Context,
+) ([]string, error) {
+	cmdActs, err := s.commandActionService.List(
+		ctx,
+		command_action.CommandActionFilter{},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var cmdActNames []string
+	for _, act := range cmdActs {
+		cmdActNames = append(cmdActNames, act.Name)
+	}
+
+	return cmdActNames, nil
+}

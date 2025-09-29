@@ -85,7 +85,17 @@ func (handler *CommandHandler) AddNewCommand(ctx *gin.Context) {
 			res.Error = err.Error()
 			httpStatus = http.StatusBadRequest
 		case errors.Is(err, command_action.ErrCommandActionNotFound):
-			res.Error = err.Error()
+			actNames, err := handler.service.GetAvailableCmdActions(ctx)
+			if err != nil {
+				res.Error = err.Error()
+			} else {
+				errStr := "command action should be one of:"
+				for _, item := range actNames {
+					errStr += " " + item + ","
+				}
+				res.Error = errStr[:len(errStr)-1]
+			}
+
 			httpStatus = http.StatusBadRequest
 		}
 
