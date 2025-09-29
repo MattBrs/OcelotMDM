@@ -30,7 +30,7 @@ func NewCommandHandler(service *command.Service) *CommandHandler {
 // Enqueues a new command to target device
 // @Summary Creates a new commmand that is enqueued to the device
 // @Schemes
-// @Description Lets a user create a command that will be enqueued as soon as possible to the mqtt topic of the target device
+// @Description Lets a user create a command that will be enqueued as soon as possible to the mqtt topic of the target device. What determines the actual action of the command (what the command do when is read by the device) is the command_action
 // @Tags command
 // @Accept json
 // @Produce json

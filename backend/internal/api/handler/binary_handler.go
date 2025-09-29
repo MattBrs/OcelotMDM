@@ -23,6 +23,25 @@ func NewBinaryHandler(service *binary.Service) *BinaryHandler {
 	}
 }
 
+// @BasePath /binary
+
+// Adds a new bynary to the file_repository
+// @Summary Adds a new bynary to the file_repository (could be aws s3, google cloud, etc)
+// @Schemes
+// @Description Uploads a file to the chosen file_repository, that could be aws s3, google cloud or wathever is implemented under the hood
+// @Tags binary
+// @Accept json
+// @Produce json
+// @Param binary body binary_dto.AddBinaryRequest true "binary data"
+// @Success 200 {object} binary_dto.AddBinaryResponse
+// @Failure 400 {object} binary_dto.ResponseErr
+// @Failure 401 {object} binary_dto.ResponseErr
+// @Failure 500 {object} binary_dto.ResponseErr
+// @Router /binary/add [post]
+// @securityDefinitions.apiKey JWT
+// @in header
+// @name Authorization
+// @Security JWT
 func (h *BinaryHandler) AddNewBinary(ctx *gin.Context) {
 	var req binary_dto.AddBinaryRequest
 	err := ctx.ShouldBindJSON(&req)
@@ -54,6 +73,22 @@ func (h *BinaryHandler) AddNewBinary(ctx *gin.Context) {
 	})
 }
 
+// @BasePath /binary
+
+// returns a binary from the file repository
+// @Summary returns a binary from the file repository.
+// @Schemes
+// @Description returns a binary from the file repository. The file data is encoded in base64
+// @Tags binary
+// @Accept json
+// @Produce json
+// @Param token query string true "OTP token for auth"
+// @Param name query string true "binary / file name"
+// @Success 200 {object} binary_dto.GetBinaryResponse
+// @Failure 400 {object} binary_dto.ResponseErr
+// @Failure 401 {object} binary_dto.ResponseErr
+// @Failure 500 {object} binary_dto.ResponseErr
+// @Router /binary/get [get]
 func (h *BinaryHandler) GetBinary(ctx *gin.Context) {
 	otp := ctx.Query("token")
 	binaryName := ctx.Query("name")

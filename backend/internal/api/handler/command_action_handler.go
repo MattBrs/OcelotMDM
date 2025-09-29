@@ -21,6 +21,25 @@ func NewCommandActionHandler(
 	}
 }
 
+// @BasePath /command_actions
+
+// Creates a new command action
+// @Summary Creates a new commmand action that is then used to create commands
+// @Schemes
+// @Description Creates a new commmand action that is then used to create commands. What a command does is determined by a command_action. Example: command_action='install_binary', the new command that is enqueued with this command action will install a binary.
+// @Tags command_actions
+// @Accept json
+// @Produce json
+// @Param command_action body command_action_dto.AddNewCommandActionRequest true "command action data"
+// @Success 200 {object} command_action_dto.AddNewCommandActionResponse
+// @Failure 400 {object} command_action_dto.ResponseErr
+// @Failure 401 {object} command_action_dto.ResponseErr
+// @Failure 500 {object} command_action_dto.ResponseErr
+// @Router /command_actions/new [post]
+// @securityDefinitions.apiKey JWT
+// @in header
+// @name Authorization
+// @Security JWT
 func (handler *CommandActionHandler) AddNewCommandAction(ctx *gin.Context) {
 	var req command_action_dto.AddNewCommandActionRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -73,6 +92,25 @@ func (handler *CommandActionHandler) AddNewCommandAction(ctx *gin.Context) {
 	)
 }
 
+// @BasePath /command_actions
+
+// Lists the command actions
+// @Summary Returns a list of the created command_actions. With filter.
+// @Schemes
+// @Description  Returns a list of the created command_actions. The command actions are filtered by some attributes.
+// @Tags command_actions
+// @Accept json
+// @Produce json
+// @Param name query string false "Command action name"
+// @Success 200 {object} command_action_dto.ListCommandActionResponse
+// @Failure 400 {object} command_action_dto.ResponseErr
+// @Failure 401 {object} command_action_dto.ResponseErr
+// @Failure 500 {object} command_action_dto.ResponseErr
+// @Router /command_actions/list [get]
+// @securityDefinitions.apiKey JWT
+// @in header
+// @name Authorization
+// @Security JWT
 func (handler *CommandActionHandler) ListCommandActions(ctx *gin.Context) {
 	name := ctx.Query("name")
 
@@ -99,6 +137,25 @@ func (handler *CommandActionHandler) ListCommandActions(ctx *gin.Context) {
 	)
 }
 
+// @BasePath /command_actions
+
+// Deletes command action
+// @Summary Deletes a command action
+// @Schemes
+// @Description deletes a command action by name (which is unique)
+// @Tags command_actions
+// @Accept json
+// @Produce json
+// @Param command_action body command_action_dto.DeleteCommandActionRequest true "command action name"
+// @Success 200 {object} command_action_dto.AddNewCommandActionResponse
+// @Failure 400 {object} command_action_dto.ResponseErr
+// @Failure 401 {object} command_action_dto.ResponseErr
+// @Failure 500 {object} command_action_dto.ResponseErr
+// @Router /command_actions/delete [post]
+// @securityDefinitions.apiKey JWT
+// @in header
+// @name Authorization
+// @Security JWT
 func (handler *CommandActionHandler) DeleteCommandAction(ctx *gin.Context) {
 	var req command_action_dto.DeleteCommandActionRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {

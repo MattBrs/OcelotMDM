@@ -4,6 +4,120 @@
         "contact": {}
     },
     "paths": {
+        "/binary/add": {
+            "post": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Uploads a file to the chosen file_repository, that could be aws s3, google cloud or wathever is implemented under the hood",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "binary"
+                ],
+                "summary": "Adds a new bynary to the file_repository (could be aws s3, google cloud, etc)",
+                "parameters": [
+                    {
+                        "description": "binary data",
+                        "name": "binary",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_binary_dto.AddBinaryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_binary_dto.AddBinaryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_binary_dto.ResponseErr"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_binary_dto.ResponseErr"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_binary_dto.ResponseErr"
+                        }
+                    }
+                }
+            }
+        },
+        "/binary/get": {
+            "get": {
+                "description": "returns a binary from the file repository. The file data is encoded in base64",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "binary"
+                ],
+                "summary": "returns a binary from the file repository.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "OTP token for auth",
+                        "name": "token",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "binary / file name",
+                        "name": "name",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_binary_dto.GetBinaryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_binary_dto.ResponseErr"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_binary_dto.ResponseErr"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_binary_dto.ResponseErr"
+                        }
+                    }
+                }
+            }
+        },
         "/command/list": {
             "get": {
                 "security": [
@@ -89,7 +203,7 @@
                         "JWT": []
                     }
                 ],
-                "description": "Lets a user create a command that will be enqueued as soon as possible to the mqtt topic of the target device",
+                "description": "Lets a user create a command that will be enqueued as soon as possible to the mqtt topic of the target device. What determines the actual action of the command (what the command do when is read by the device) is the command_action",
                 "consumes": [
                     "application/json"
                 ],
@@ -191,6 +305,174 @@
                         "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.ResponseErr"
+                        }
+                    }
+                }
+            }
+        },
+        "/command_actions/delete": {
+            "post": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "deletes a command action by name (which is unique)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "command_actions"
+                ],
+                "summary": "Deletes a command action",
+                "parameters": [
+                    {
+                        "description": "command action name",
+                        "name": "command_action",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_action_dto.DeleteCommandActionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_action_dto.AddNewCommandActionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_action_dto.ResponseErr"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_action_dto.ResponseErr"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_action_dto.ResponseErr"
+                        }
+                    }
+                }
+            }
+        },
+        "/command_actions/list": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Returns a list of the created command_actions. The command actions are filtered by some attributes.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "command_actions"
+                ],
+                "summary": "Returns a list of the created command_actions. With filter.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Command action name",
+                        "name": "name",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_action_dto.ListCommandActionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_action_dto.ResponseErr"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_action_dto.ResponseErr"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_action_dto.ResponseErr"
+                        }
+                    }
+                }
+            }
+        },
+        "/command_actions/new": {
+            "post": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Creates a new commmand action that is then used to create commands. What a command does is determined by a command_action. Example: command_action='install_binary', the new command that is enqueued with this command action will install a binary.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "command_actions"
+                ],
+                "summary": "Creates a new commmand action that is then used to create commands",
+                "parameters": [
+                    {
+                        "description": "command action data",
+                        "name": "command_action",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_action_dto.AddNewCommandActionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_action_dto.AddNewCommandActionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_action_dto.ResponseErr"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_action_dto.ResponseErr"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_action_dto.ResponseErr"
                         }
                     }
                 }
@@ -491,6 +773,134 @@
         }
     },
     "definitions": {
+        "github_com_MattBrs_OcelotMDM_internal_api_dto_binary_dto.AddBinaryRequest": {
+            "type": "object",
+            "required": [
+                "architecture",
+                "data",
+                "name",
+                "version"
+            ],
+            "properties": {
+                "architecture": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_MattBrs_OcelotMDM_internal_api_dto_binary_dto.AddBinaryResponse": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_MattBrs_OcelotMDM_internal_api_dto_binary_dto.GetBinaryResponse": {
+            "type": "object",
+            "properties": {
+                "binary_data": {
+                    "type": "string"
+                },
+                "binary_name": {
+                    "type": "string"
+                },
+                "binary_version": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_MattBrs_OcelotMDM_internal_api_dto_binary_dto.ResponseErr": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_MattBrs_OcelotMDM_internal_api_dto_command_action_dto.AddNewCommandActionRequest": {
+            "type": "object",
+            "required": [
+                "default_priority",
+                "description",
+                "name",
+                "payload_required",
+                "required_online",
+                "token_required"
+            ],
+            "properties": {
+                "default_priority": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "payload_required": {
+                    "type": "boolean"
+                },
+                "required_online": {
+                    "type": "boolean"
+                },
+                "token_required": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "github_com_MattBrs_OcelotMDM_internal_api_dto_command_action_dto.AddNewCommandActionResponse": {
+            "type": "object",
+            "properties": {
+                "_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_MattBrs_OcelotMDM_internal_api_dto_command_action_dto.DeleteCommandActionRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_MattBrs_OcelotMDM_internal_api_dto_command_action_dto.ListCommandActionResponse": {
+            "type": "object",
+            "properties": {
+                "command_actions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_domain_command_action.CommandAction"
+                    }
+                }
+            }
+        },
+        "github_com_MattBrs_OcelotMDM_internal_api_dto_command_action_dto.ResponseErr": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
         "github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.AddNewCommadRequest": {
             "type": "object",
             "required": [
@@ -773,6 +1183,32 @@
                 },
                 "status": {
                     "type": "string"
+                }
+            }
+        },
+        "github_com_MattBrs_OcelotMDM_internal_domain_command_action.CommandAction": {
+            "type": "object",
+            "properties": {
+                "defaultPriority": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "payloadRequired": {
+                    "type": "boolean"
+                },
+                "requiredOnlne": {
+                    "type": "boolean"
+                },
+                "tokenRequired": {
+                    "type": "boolean"
                 }
             }
         },
