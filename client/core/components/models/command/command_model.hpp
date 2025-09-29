@@ -24,7 +24,9 @@ class Command {
     std::string   getStatus() const;
     std::string   getError() const;
     bool          isOnlineRequired() const;
+    std::string   getData() const;
 
+    void setData(const std::string &data);
     void setStatus(const CommandStatus status);
     void setError(const std::string &error);
 
@@ -36,6 +38,6 @@ class Command {
     CommandStatus status;
     std::string   errorMsg;
     bool          requireOnline;
+    std::string   data;
 };
-
 };  // namespace OcelotMDM::component::model

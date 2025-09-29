@@ -143,6 +143,7 @@ func onFetch(s *CommandQueueService) {
 					commands[i].Id.Hex(),
 					command.ERRORED,
 					err.Error(),
+					"",
 				)
 
 				continue
@@ -175,6 +176,7 @@ func onFetch(s *CommandQueueService) {
 					"could not send to device because: %s",
 					err.Error(),
 				),
+				"",
 			)
 		}
 	}
@@ -189,7 +191,7 @@ func onAckResponse(s *CommandQueueService, msg *ocelot_mqtt.ChanMessage) {
 
 	fmt.Println("received ack from: ", splittedTopic[0])
 
-	id, state, errorMsg, err := decodeAckMessage(string(msg.Payload))
+	id, state, errorMsg, data, err := decodeAckMessage(string(msg.Payload))
 	if err != nil {
 		fmt.Println("could not decode ackMessage: ", err.Error())
 		return
@@ -200,6 +202,7 @@ func onAckResponse(s *CommandQueueService, msg *ocelot_mqtt.ChanMessage) {
 		*id,
 		*state,
 		*errorMsg,
+		*data,
 	)
 
 	if err != nil {
@@ -239,16 +242,17 @@ func encodeCommandMessage(
 
 func decodeAckMessage(
 	hexData string,
-) (*string, *command.CommandStatus, *string, error) {
+) (*string, *command.CommandStatus, *string, *string, error) {
 	type unpacked struct {
 		Id       string
 		State    string
 		ErrorMsg string
+		Data     string
 	}
 
 	data, err := hex.DecodeString(hexData)
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("could not decode data '%s' because %s",
+		return nil, nil, nil, nil, fmt.Errorf("could not decode data '%s' because %s",
 			hexData,
 			err.Error())
 	}
@@ -256,15 +260,15 @@ func decodeAckMessage(
 	var msg unpacked
 	err = msgpack.Unmarshal(data, &msg)
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("could not unmarshal message: %s", err.Error())
+		return nil, nil, nil, nil, fmt.Errorf("could not unmarshal message: %s", err.Error())
 	}
 
 	state := command.StatusFromString(msg.State)
 	if state == nil {
-		return nil, nil, nil, fmt.Errorf("state not found: %s", msg.State)
+		return nil, nil, nil, nil, fmt.Errorf("state not found: %s", msg.State)
 	}
 
-	return &msg.Id, state, &msg.ErrorMsg, nil
+	return &msg.Id, state, &msg.ErrorMsg, &msg.Data, nil
 }
 
 func attachTokenToCmd(ctx context.Context, tokenService *token.Service, payload string) (*string, error) {

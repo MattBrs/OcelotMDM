@@ -102,6 +102,7 @@ func (s *Service) UpdateStatus(
 	id string,
 	newStatus CommandStatus,
 	errorDesc string,
+	data string,
 ) error {
 	idObj, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -115,6 +116,7 @@ func (s *Service) UpdateStatus(
 
 	foundCommand.Status = newStatus
 	foundCommand.ErrorDescription = errorDesc
+	foundCommand.Data = data
 	err = s.repo.Update(ctx, foundCommand)
 	if err != nil {
 		return err

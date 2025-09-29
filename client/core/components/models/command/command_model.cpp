@@ -51,12 +51,20 @@ bool Command::isOnlineRequired() const {
     return this->requireOnline;
 }
 
+std::string Command::getData() const {
+    return this->data;
+}
+
 void Command::setStatus(const CommandStatus status) {
     this->status = status;
 }
 
 void Command::setError(const std::string &error) {
     this->errorMsg = error;
+}
+
+void Command::setData(const std::string &data) {
+    this->data = data;
 }
 
 bool Command::operator<(const Command &other) const {

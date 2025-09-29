@@ -51,4 +51,5 @@ type Command struct {
 	QueueID           primitive.ObjectID `bson:"queue_id,omitempty"`
 	RequiredOnline    bool               `bson:"required_online,omitempty"`
 	TokenRequired     bool               `bson:"token_required,omitempty"`
+	Data              string             `bson:"data,omitempty"`
 }

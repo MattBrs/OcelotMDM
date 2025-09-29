@@ -258,7 +258,7 @@ func (handler *CommandHandler) UpdateCommandStatus(ctx *gin.Context) {
 		errDesc = req.ErrorDescription
 	}
 
-	err := handler.service.UpdateStatus(ctx, req.ID, *newStatus, errDesc)
+	err := handler.service.UpdateStatus(ctx, req.ID, *newStatus, errDesc, "")
 	if err != nil {
 		httpStatus := http.StatusInternalServerError
 		errRes := command_dto.ResponseErr{

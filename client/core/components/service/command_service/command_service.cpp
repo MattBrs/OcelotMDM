@@ -82,12 +82,15 @@ void CommandService::queueWorker() {
             auto execRes = this->executeCommand(cmd);
 
             if (!execRes.has_value()) {
+                cmd.setData("");
                 cmd.setError("command not supported");
                 cmd.setStatus(model::Command::CommandStatus::Errored);
             } else if (!execRes.value().successful) {
+                cmd.setData("");
                 cmd.setError(execRes.value().props.error);
                 cmd.setStatus(model::Command::CommandStatus::Errored);
             } else {
+                cmd.setData(execRes.value().props.data);
                 cmd.setError("");
                 cmd.setStatus(model::Command::CommandStatus::Completed);
             }
@@ -178,6 +181,7 @@ std::string CommandService::encodeCmd(const model::Command &cmd) {
     ackRes["Id"] = cmd.getId();
     ackRes["State"] = cmd.getStatus();
     ackRes["ErrorMsg"] = cmd.getError();
+    ackRes["Data"] = cmd.getData();
 
     return bytesToHex(nlohmann::json::to_msgpack(ackRes));
 }
@@ -191,6 +195,7 @@ std::optional<CommandImpl::ExecutionResult> CommandService::executeCommand(
         try {
             payload = nlohmann::json::parse(cmd.getPayload());
         } catch (nlohmann::json::exception &e) {
+            Logger::getInstance().putError(e.what());
             return std::nullopt;
         }
 
@@ -204,6 +209,7 @@ std::optional<CommandImpl::ExecutionResult> CommandService::executeCommand(
         } catch (nlohmann::json::exception &e) {
             res.successful = false;
             res.props.error = "could not parse payload";
+            Logger::getInstance().putError(e.what());
         }
 
         return res;
@@ -218,6 +224,7 @@ std::optional<CommandImpl::ExecutionResult> CommandService::executeCommand(
         if (this->logStreamer == nullptr || this->timer == nullptr) {
             res.successful = false;
             res.props.error = "streamer or timer are not initialized";
+            Logger::getInstance().putError("streamer or timer are not init");
             return res;
         }
 
@@ -242,6 +249,7 @@ std::optional<CommandImpl::ExecutionResult> CommandService::executeCommand(
         try {
             payload = nlohmann::json::parse(cmd.getPayload());
         } catch (nlohmann::json::exception &e) {
+            Logger::getInstance().putError(e.what());
             return std::nullopt;
         }
 
@@ -252,6 +260,7 @@ std::optional<CommandImpl::ExecutionResult> CommandService::executeCommand(
         } catch (nlohmann::json::exception &e) {
             res.successful = false;
             res.props.error = "could not parse payload";
+            Logger::getInstance().putError(e.what());
         }
 
         return res;
@@ -262,6 +271,7 @@ std::optional<CommandImpl::ExecutionResult> CommandService::executeCommand(
         try {
             payload = nlohmann::json::parse(cmd.getPayload());
         } catch (nlohmann::json::exception &e) {
+            Logger::getInstance().putError(e.what());
             return std::nullopt;
         }
 
@@ -271,6 +281,7 @@ std::optional<CommandImpl::ExecutionResult> CommandService::executeCommand(
         } catch (nlohmann::json::exception &e) {
             res.successful = false;
             res.props.error = "could not parse payload";
+            Logger::getInstance().putError(e.what());
         }
 
         return res;

@@ -22,6 +22,8 @@ CommandImpl::ExecutionResult CommandImpl::installBinary(
     const std::shared_ptr<db::BinaryDao> &binDao,
     std::shared_ptr<network::HttpClient> &httpClient, const std::string &name,
     const std::string &otp) {
+    Logger::getInstance().put("installing binary: " + name);
+
     executionResult res;
     std::filesystem::create_directory("bin");
     if (httpClient == nullptr) {
@@ -74,6 +76,8 @@ CommandImpl::ExecutionResult CommandImpl::startBinary(
     const std::shared_ptr<db::BinaryDao>           &binDao,
     const std::shared_ptr<service::SpawnerService> &spawnerService,
     const std::string                              &name) {
+    Logger::getInstance().put("starting binary: " + name);
+
     CommandImpl::ExecutionResult res;
 
     auto binaries = binDao->listBinaries();
@@ -112,6 +116,7 @@ CommandImpl::ExecutionResult CommandImpl::startBinary(
 
 CommandImpl::ExecutionResult CommandImpl::uninstallBinary(
     const std::shared_ptr<db::BinaryDao> &binDao, const std::string &name) {
+    Logger::getInstance().put("uninstalling binary: " + name);
     CommandImpl::ExecutionResult res;
     auto                         delRes = binDao->removeBinary(name);
 
@@ -127,6 +132,8 @@ CommandImpl::ExecutionResult CommandImpl::uninstallBinary(
 
 CommandImpl::ExecutionResult CommandImpl::listBinaries(
     const std::shared_ptr<db::BinaryDao> &binDao) {
+    Logger::getInstance().put("listing binaries");
+
     CommandImpl::ExecutionResult res;
     auto                         binaries = binDao->listBinaries();
     if (!binaries.has_value()) {
@@ -135,10 +142,15 @@ CommandImpl::ExecutionResult CommandImpl::listBinaries(
         return res;
     }
 
-    res.props.data = "";
+    std::string data = "";
     for (auto &bin : binaries.value()) {
-        res.props.data.append(bin.getName()).append("\n");
+        data.append(bin.getName()).append(", ");
     }
+
+    data.erase(data.size() - 2);
+
+    res.successful = true;
+    res.props.data = data;
 
     return res;
 }

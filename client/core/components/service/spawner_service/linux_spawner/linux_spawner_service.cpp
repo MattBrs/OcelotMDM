@@ -12,16 +12,16 @@
 
 namespace OcelotMDM::component::service {
 LinuxSpawerService::LinuxSpawerService(
-    const std::shared_ptr<db::BinaryDao>& binDao)
+    const std::shared_ptr<db::BinaryDao> &binDao)
     : SpawnerService(binDao) {
     this->startBinaries();
 }
 
-int LinuxSpawerService::runBinary(const std::string& binPath) {
+int LinuxSpawerService::runBinary(const std::string &binPath) {
     std::cout << "about to run binary: " << binPath << std::endl;
     pid_t pid = fork();
     if (pid == 0) {
-        char* const args[] = {const_cast<char*>(binPath.c_str()), nullptr};
+        char *const args[] = {const_cast<char *>(binPath.c_str()), nullptr};
         execvp(binPath.c_str(), args);
         exit(1);  // child failed the execution
     }
