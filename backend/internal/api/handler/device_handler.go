@@ -113,7 +113,7 @@ func (h *DeviceHandler) AddNewDevice(ctx *gin.Context) {
 // @Param architecture query string false "Device Architecture"
 // @Success 200 {object} []device.Device
 // @Router /devices [get]
-// @securityDefinitions.apiKey token
+// @securityDefinitions.apiKey JWT
 // @in header
 // @name Authorization
 // @Security JWT
@@ -154,7 +154,7 @@ func (h *DeviceHandler) ListDevices(ctx *gin.Context) {
 // @Param device body device_dto.UpdateAddressRequest true "Device New address"
 // @Success 200 {object} device_dto.DeviceCreationResponse
 // @Router /devices/updateAddress [post]
-// @securityDefinitions.apiKey token
+// @securityDefinitions.apiKey JWT
 // @in header
 // @name Authorization
 // @Security JWT

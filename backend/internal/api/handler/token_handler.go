@@ -16,12 +16,28 @@ func NewTokenHandler(service *token.Service) *TokenHandler {
 	return &TokenHandler{service}
 }
 
+// @BasePath /token
+
+// Generates an OTP
+// @Summary Generates OTP
+// @Schemes
+// @Description generates an OTP to be used for some operations
+// @Tags token
+// @Accept json
+// @Produce json
+// @Success 200 {object} token_dto.NewTokenResponse
+// @Failure 500 {object} token_dto.NewTokenResponseErr
+// @Router /token/generate [post]
+// @securityDefinitions.apiKey JWT
+// @in header
+// @name Authorization
+// @Security JWT
 func (h *TokenHandler) RequestToken(ctx *gin.Context) {
 	token, err := h.service.GenerateNewToken(ctx)
 	if err != nil {
 		ctx.JSON(
 			http.StatusInternalServerError,
-			gin.H{"error": "Could not process request"},
+			token_dto.NewTokenResponseErr{Error: "Could not process request"},
 		)
 		return
 	}

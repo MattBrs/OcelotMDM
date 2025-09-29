@@ -91,8 +91,8 @@ func (h *UserHandler) CreateUser(ctx *gin.Context) {
 // @Produce json
 // @Param user body user_dto.LoginUserRequest true "User account"
 // @Success 200 {object} user_dto.LoginUserResponse
-// @Error 400 {object} user_dto.LoginUserResponse
-// @Error 500 {object} user_dto.LoginUserResponse
+// @Failure 400 {object} user_dto.LoginUserResponse
+// @Failure 500 {object} user_dto.LoginUserResponse
 // @Router /user/login [post]
 func (h *UserHandler) Login(ctx *gin.Context) {
 	var req user_dto.LoginUserRequest
@@ -144,8 +144,8 @@ func (h *UserHandler) Login(ctx *gin.Context) {
 // @Produce json
 // @Param user body user_dto.UpdateUserEnableStatusRequest true "User account"
 // @Success 200 {object} user_dto.UpdateUserEnableStatusRequest
-// @Error 400 {object} user_dto.UpdateUserEnableStatusResponseErr
-// @Error 500 {object} user_dto.UpdateUserEnableStatusResponseErr
+// @Failure 400 {object} user_dto.UpdateUserEnableStatusResponseErr
+// @Failure 500 {object} user_dto.UpdateUserEnableStatusResponseErr
 // @Router /user/update/enabled [post]
 // @securityDefinitions.apiKey JWT
 // @in header

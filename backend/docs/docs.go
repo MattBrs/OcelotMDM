@@ -143,6 +143,40 @@ const docTemplate = `{
                 }
             }
         },
+        "/token/generate": {
+            "post": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "generates an OTP to be used for some operations",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "token"
+                ],
+                "summary": "Generates OTP",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_token_dto.NewTokenResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_token_dto.NewTokenResponseErr"
+                        }
+                    }
+                }
+            }
+        },
         "/user/create": {
             "post": {
                 "description": "Create a new user account with username and password. Default disabled",
@@ -207,6 +241,18 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.LoginUserResponse"
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.LoginUserResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.LoginUserResponse"
+                        }
                     }
                 }
             }
@@ -245,6 +291,18 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.UpdateUserEnableStatusRequest"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.UpdateUserEnableStatusResponseErr"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.UpdateUserEnableStatusResponseErr"
                         }
                     }
                 }
@@ -298,6 +356,25 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_MattBrs_OcelotMDM_internal_api_dto_token_dto.NewTokenResponse": {
+            "type": "object",
+            "properties": {
+                "expires_at": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_MattBrs_OcelotMDM_internal_api_dto_token_dto.NewTokenResponseErr": {
+            "type": "object",
+            "properties": {
+                "error": {
                     "type": "string"
                 }
             }
@@ -365,6 +442,14 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.UpdateUserEnableStatusResponseErr": {
+            "type": "object",
+            "properties": {
+                "error": {
                     "type": "string"
                 }
             }

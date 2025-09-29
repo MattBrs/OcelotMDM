@@ -34,6 +34,18 @@ definitions:
     - ip_address
     - name
     type: object
+  github_com_MattBrs_OcelotMDM_internal_api_dto_token_dto.NewTokenResponse:
+    properties:
+      expires_at:
+        type: string
+      token:
+        type: string
+    type: object
+  github_com_MattBrs_OcelotMDM_internal_api_dto_token_dto.NewTokenResponseErr:
+    properties:
+      error:
+        type: string
+    type: object
   github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.CreateUserRequest:
     properties:
       password:
@@ -77,6 +89,11 @@ definitions:
     required:
     - enabled
     - username
+    type: object
+  github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.UpdateUserEnableStatusResponseErr:
+    properties:
+      error:
+        type: string
     type: object
   github_com_MattBrs_OcelotMDM_internal_domain_device.Device:
     properties:
@@ -187,6 +204,27 @@ paths:
       summary: update device address
       tags:
       - devices
+  /token/generate:
+    post:
+      consumes:
+      - application/json
+      description: generates an OTP to be used for some operations
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_token_dto.NewTokenResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_token_dto.NewTokenResponseErr'
+      security:
+      - JWT: []
+      summary: Generates OTP
+      tags:
+      - token
   /user/create:
     post:
       consumes:
@@ -229,6 +267,14 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.LoginUserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.LoginUserResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.LoginUserResponse'
       summary: Login a User account. Provides JWT
       tags:
       - user
@@ -252,6 +298,14 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.UpdateUserEnableStatusRequest'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.UpdateUserEnableStatusResponseErr'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.UpdateUserEnableStatusResponseErr'
       security:
       - JWT: []
       summary: Login a User account. Provides JWT
