@@ -226,6 +226,18 @@ std::optional<CommandImpl::ExecutionResult> CommandService::executeCommand(
         return res;
     }
 
+    if (cmd.getAction().compare("disable_live_logging") == 0) {
+        CommandImpl::ExecutionResult res;
+        if (this->logStreamer == nullptr || this->timer == nullptr) {
+            res.successful = false;
+            res.props.error = "streamer or timer are not initialized";
+            return res;
+        }
+
+        res = CommandImpl::disableLiveLogging(this->logStreamer, this->timer);
+        return res;
+    }
+
     return std::nullopt;
 }
 }  // namespace OcelotMDM::component::service

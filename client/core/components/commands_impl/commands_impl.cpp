@@ -129,4 +129,22 @@ CommandImpl::ExecutionResult CommandImpl::enableLiveLogging(
     res.successful = true;
     return res;
 }
+
+CommandImpl::ExecutionResult CommandImpl::disableLiveLogging(
+    const std::shared_ptr<LogStreamer> &logStreamer,
+    const std::shared_ptr<Timer>       &timer) {
+    ExecutionResult res;
+    if (!logStreamer->isRunning()) {
+        res.successful = false;
+        res.props.error = "live logging already disabled";
+        return res;
+    }
+
+    Logger::getInstance().registerQueue(nullptr);
+    logStreamer->stop();
+    timer->stop();
+
+    res.successful = true;
+    return res;
+}
 };  // namespace OcelotMDM::component

@@ -43,6 +43,10 @@ class CommandImpl {
         const std::shared_ptr<LogStreamer> &logStreamer,
         const std::shared_ptr<Timer>       &timer);
 
+    static ExecutionResult disableLiveLogging(
+        const std::shared_ptr<LogStreamer> &logStreamer,
+        const std::shared_ptr<Timer>       &timer);
+
    private:
 };
 }  // namespace OcelotMDM::component
