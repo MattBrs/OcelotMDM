@@ -258,6 +258,22 @@ std::optional<CommandImpl::ExecutionResult> CommandService::executeCommand(
     }
 
     if (cmd.getAction().compare("uninstall_binary") == 0) {
+        nlohmann::json payload;
+        try {
+            payload = nlohmann::json::parse(cmd.getPayload());
+        } catch (nlohmann::json::exception &e) {
+            return std::nullopt;
+        }
+
+        CommandImpl::ExecutionResult res;
+        try {
+            res = CommandImpl::uninstallBinary(this->binDao, payload["name"]);
+        } catch (nlohmann::json::exception &e) {
+            res.successful = false;
+            res.props.error = "could not parse payload";
+        }
+
+        return res;
     }
 
     if (cmd.getAction().compare("list_binaries") == 0) {

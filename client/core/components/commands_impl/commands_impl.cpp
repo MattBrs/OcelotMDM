@@ -113,7 +113,15 @@ CommandImpl::ExecutionResult CommandImpl::startBinary(
 CommandImpl::ExecutionResult CommandImpl::uninstallBinary(
     const std::shared_ptr<db::BinaryDao> &binDao, const std::string &name) {
     CommandImpl::ExecutionResult res;
+    auto                         delRes = binDao->removeBinary(name);
 
+    if (!delRes.has_value() || !delRes.value()) {
+        res.successful = false;
+        res.props.error = binDao->getError();
+        return res;
+    }
+
+    res.successful = true;
     return res;
 }
 
@@ -132,7 +140,6 @@ CommandImpl::ExecutionResult CommandImpl::listBinaries(
         res.props.data.append(bin.getName()).append("\n");
     }
 
-    Logger::getInstance().put(res.props.data);
     return res;
 }
 
