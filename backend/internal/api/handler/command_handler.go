@@ -25,6 +25,25 @@ func NewCommandHandler(service *command.Service) *CommandHandler {
 	}
 }
 
+// @BasePath /command
+
+// Enqueues a new command to target device
+// @Summary Creates a new commmand that is enqueued to the device
+// @Schemes
+// @Description Lets a user create a command that will be enqueued as soon as possible to the mqtt topic of the target device
+// @Tags command
+// @Accept json
+// @Produce json
+// @Param command body command_dto.AddNewCommadRequest true "command data"
+// @Success 200 {object} command_dto.AddNewCommadResponse
+// @Failure 400 {object} command_dto.ResponseErr
+// @Failure 401 {object} command_dto.ResponseErr
+// @Failure 500 {object} command_dto.ResponseErr
+// @Router /command/new [post]
+// @securityDefinitions.apiKey JWT
+// @in header
+// @name Authorization
+// @Security JWT
 func (handler *CommandHandler) AddNewCommand(ctx *gin.Context) {
 	var req command_dto.AddNewCommadRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -112,6 +131,30 @@ func (handler *CommandHandler) AddNewCommand(ctx *gin.Context) {
 		},
 	)
 }
+
+// @BasePath /command
+
+// Lists the previously enqueued commands
+// @Summary Lists the previously enqueued commands applying a filter
+// @Schemes
+// @Description Shows a list of all enqueued commands, with their status and other information useful for debugging the command operations. The list is filtered with some parameters
+// @Tags command
+// @Accept json
+// @Produce json
+// @Param id query string false "Command ID"
+// @Param deviceName query string false "Target device name"
+// @Param status query string false "Status"
+// @Param priority query string false "Priority"
+// @Param requestedBy query string false "Requested by"
+// @Success 200 {object} command_dto.ListCommandsResponse
+// @Failure 400 {object} command_dto.ResponseErr
+// @Failure 401 {object} command_dto.ResponseErr
+// @Failure 500 {object} command_dto.ResponseErr
+// @Router /command/list [get]
+// @securityDefinitions.apiKey JWT
+// @in header
+// @name Authorization
+// @Security JWT
 func (handler *CommandHandler) ListCommands(ctx *gin.Context) {
 	id := ctx.Query("id")
 	deviceName := ctx.Query("deviceName")
@@ -215,6 +258,25 @@ func (handler *CommandHandler) DeleteCommand(ctx *gin.Context) {
 	})
 }
 
+// @BasePath /command
+
+// Updates a command status
+// @Summary Updates an enqueued command status
+// @Schemes
+// @Description Lets a user update the status of an enqueue command manually (enqueued, acknowledged, completed, errored)
+// @Tags command
+// @Accept json
+// @Produce json
+// @Param command body command_dto.UpdateCommandStatusRequest true "command data"
+// @Success 200 {object} command_dto.UpdateCommandStatusResponse
+// @Failure 400 {object} command_dto.ResponseErr
+// @Failure 401 {object} command_dto.ResponseErr
+// @Failure 500 {object} command_dto.ResponseErr
+// @Router /command/update/status [post]
+// @securityDefinitions.apiKey JWT
+// @in header
+// @name Authorization
+// @Security JWT
 func (handler *CommandHandler) UpdateCommandStatus(ctx *gin.Context) {
 	var req command_dto.UpdateCommandStatusRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {

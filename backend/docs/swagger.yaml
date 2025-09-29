@@ -1,4 +1,56 @@
 definitions:
+  github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.AddNewCommadRequest:
+    properties:
+      command_action_name:
+        type: string
+      device_name:
+        type: string
+      payload:
+        type: string
+      priority:
+        type: integer
+    required:
+    - command_action_name
+    - device_name
+    - priority
+    type: object
+  github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.AddNewCommadResponse:
+    properties:
+      command_action_name:
+        type: string
+      id:
+        type: string
+      status:
+        $ref: '#/definitions/github_com_MattBrs_OcelotMDM_internal_domain_command.CommandStatus'
+    type: object
+  github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.ListCommandsResponse:
+    properties:
+      commands:
+        items:
+          $ref: '#/definitions/github_com_MattBrs_OcelotMDM_internal_domain_command.Command'
+        type: array
+    type: object
+  github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.ResponseErr:
+    properties:
+      error:
+        type: string
+    type: object
+  github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.UpdateCommandStatusRequest:
+    properties:
+      error_description:
+        type: string
+      id:
+        type: string
+      status:
+        type: string
+    type: object
+  github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.UpdateCommandStatusResponse:
+    properties:
+      id:
+        type: string
+      new_status:
+        type: string
+    type: object
   github_com_MattBrs_OcelotMDM_internal_api_dto_device_dto.DeviceCreationRequest:
     properties:
       architecture:
@@ -95,6 +147,46 @@ definitions:
       error:
         type: string
     type: object
+  github_com_MattBrs_OcelotMDM_internal_domain_command.Command:
+    properties:
+      commandActionName:
+        type: string
+      completedAt:
+        type: string
+      createdAt:
+        type: string
+      data:
+        type: string
+      deviceName:
+        type: string
+      errorDescription:
+        type: string
+      id:
+        type: string
+      payload:
+        type: string
+      priority:
+        type: integer
+      queueID:
+        type: string
+      queuedAt:
+        type: string
+      requestedBy:
+        type: string
+      requiredOnline:
+        type: boolean
+      status:
+        $ref: '#/definitions/github_com_MattBrs_OcelotMDM_internal_domain_command.CommandStatus'
+      tokenRequired:
+        type: boolean
+    type: object
+  github_com_MattBrs_OcelotMDM_internal_domain_command.CommandStatus:
+    properties:
+      id:
+        type: integer
+      status:
+        type: string
+    type: object
   github_com_MattBrs_OcelotMDM_internal_domain_device.Device:
     properties:
       architecture:
@@ -123,6 +215,132 @@ definitions:
 info:
   contact: {}
 paths:
+  /command/list:
+    get:
+      consumes:
+      - application/json
+      description: Shows a list of all enqueued commands, with their status and other
+        information useful for debugging the command operations. The list is filtered
+        with some parameters
+      parameters:
+      - description: Command ID
+        in: query
+        name: id
+        type: string
+      - description: Target device name
+        in: query
+        name: deviceName
+        type: string
+      - description: Status
+        in: query
+        name: status
+        type: string
+      - description: Priority
+        in: query
+        name: priority
+        type: string
+      - description: Requested by
+        in: query
+        name: requestedBy
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.ListCommandsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.ResponseErr'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.ResponseErr'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.ResponseErr'
+      security:
+      - JWT: []
+      summary: Lists the previously enqueued commands applying a filter
+      tags:
+      - command
+  /command/new:
+    post:
+      consumes:
+      - application/json
+      description: Lets a user create a command that will be enqueued as soon as possible
+        to the mqtt topic of the target device
+      parameters:
+      - description: command data
+        in: body
+        name: command
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.AddNewCommadRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.AddNewCommadResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.ResponseErr'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.ResponseErr'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.ResponseErr'
+      security:
+      - JWT: []
+      summary: Creates a new commmand that is enqueued to the device
+      tags:
+      - command
+  /command/update/status:
+    post:
+      consumes:
+      - application/json
+      description: Lets a user update the status of an enqueue command manually (enqueued,
+        acknowledged, completed, errored)
+      parameters:
+      - description: command data
+        in: body
+        name: command
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.UpdateCommandStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.UpdateCommandStatusResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.ResponseErr'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.ResponseErr'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.ResponseErr'
+      security:
+      - JWT: []
+      summary: Updates an enqueued command status
+      tags:
+      - command
   /devices:
     get:
       consumes:

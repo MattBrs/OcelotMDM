@@ -4,6 +4,198 @@
         "contact": {}
     },
     "paths": {
+        "/command/list": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Shows a list of all enqueued commands, with their status and other information useful for debugging the command operations. The list is filtered with some parameters",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "command"
+                ],
+                "summary": "Lists the previously enqueued commands applying a filter",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Command ID",
+                        "name": "id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Target device name",
+                        "name": "deviceName",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Status",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Priority",
+                        "name": "priority",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Requested by",
+                        "name": "requestedBy",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.ListCommandsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.ResponseErr"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.ResponseErr"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.ResponseErr"
+                        }
+                    }
+                }
+            }
+        },
+        "/command/new": {
+            "post": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Lets a user create a command that will be enqueued as soon as possible to the mqtt topic of the target device",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "command"
+                ],
+                "summary": "Creates a new commmand that is enqueued to the device",
+                "parameters": [
+                    {
+                        "description": "command data",
+                        "name": "command",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.AddNewCommadRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.AddNewCommadResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.ResponseErr"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.ResponseErr"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.ResponseErr"
+                        }
+                    }
+                }
+            }
+        },
+        "/command/update/status": {
+            "post": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Lets a user update the status of an enqueue command manually (enqueued, acknowledged, completed, errored)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "command"
+                ],
+                "summary": "Updates an enqueued command status",
+                "parameters": [
+                    {
+                        "description": "command data",
+                        "name": "command",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.UpdateCommandStatusRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.UpdateCommandStatusResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.ResponseErr"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.ResponseErr"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.ResponseErr"
+                        }
+                    }
+                }
+            }
+        },
         "/devices": {
             "get": {
                 "security": [
@@ -299,6 +491,86 @@
         }
     },
     "definitions": {
+        "github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.AddNewCommadRequest": {
+            "type": "object",
+            "required": [
+                "command_action_name",
+                "device_name",
+                "priority"
+            ],
+            "properties": {
+                "command_action_name": {
+                    "type": "string"
+                },
+                "device_name": {
+                    "type": "string"
+                },
+                "payload": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.AddNewCommadResponse": {
+            "type": "object",
+            "properties": {
+                "command_action_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_domain_command.CommandStatus"
+                }
+            }
+        },
+        "github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.ListCommandsResponse": {
+            "type": "object",
+            "properties": {
+                "commands": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_domain_command.Command"
+                    }
+                }
+            }
+        },
+        "github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.ResponseErr": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.UpdateCommandStatusRequest": {
+            "type": "object",
+            "properties": {
+                "error_description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_MattBrs_OcelotMDM_internal_api_dto_command_dto.UpdateCommandStatusResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "new_status": {
+                    "type": "string"
+                }
+            }
+        },
         "github_com_MattBrs_OcelotMDM_internal_api_dto_device_dto.DeviceCreationRequest": {
             "type": "object",
             "required": [
@@ -439,6 +711,67 @@
             "type": "object",
             "properties": {
                 "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_MattBrs_OcelotMDM_internal_domain_command.Command": {
+            "type": "object",
+            "properties": {
+                "commandActionName": {
+                    "type": "string"
+                },
+                "completedAt": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "string"
+                },
+                "deviceName": {
+                    "type": "string"
+                },
+                "errorDescription": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "payload": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "integer"
+                },
+                "queueID": {
+                    "type": "string"
+                },
+                "queuedAt": {
+                    "type": "string"
+                },
+                "requestedBy": {
+                    "type": "string"
+                },
+                "requiredOnline": {
+                    "type": "boolean"
+                },
+                "status": {
+                    "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_domain_command.CommandStatus"
+                },
+                "tokenRequired": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "github_com_MattBrs_OcelotMDM_internal_domain_command.CommandStatus": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "status": {
                     "type": "string"
                 }
             }
