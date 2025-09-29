@@ -26,7 +26,7 @@
 - [ ] Android agent MVP
 - [x] Enrollment flow (OTP, cert exchange)
 - [x] VPN tunnel automation
-- [ ] Web dashboard basic version
+- [x] ~~Web dashboard basic version~~ --- APIs + webhooks as foundation for future dashboards/interfaces
 - [ ] Logging and metrics pipeline (Elastic)
 - [x] Deployment scripts & NGINX config
 
