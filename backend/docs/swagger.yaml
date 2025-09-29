@@ -34,6 +34,50 @@ definitions:
     - ip_address
     - name
     type: object
+  github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.CreateUserRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.CreateUserResponse:
+    properties:
+      error:
+        type: string
+      username:
+        type: string
+    type: object
+  github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.LoginUserRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.LoginUserResponse:
+    properties:
+      error:
+        type: string
+      token:
+        type: string
+    type: object
+  github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.UpdateUserEnableStatusRequest:
+    properties:
+      enabled:
+        type: boolean
+      username:
+        type: string
+    required:
+    - enabled
+    - username
+    type: object
   github_com_MattBrs_OcelotMDM_internal_domain_device.Device:
     properties:
       architecture:
@@ -143,6 +187,76 @@ paths:
       summary: update device address
       tags:
       - devices
+  /user/create:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account with username and password. Default disabled
+      parameters:
+      - description: User account
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.CreateUserResponse'
+      summary: Create a new User account
+      tags:
+      - user
+  /user/login:
+    post:
+      consumes:
+      - application/json
+      description: Lets a user login with his credentials to obtain a JWT token to
+        use in other API calls
+      parameters:
+      - description: User account
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.LoginUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.LoginUserResponse'
+      summary: Login a User account. Provides JWT
+      tags:
+      - user
+  /user/update/enabled:
+    post:
+      consumes:
+      - application/json
+      description: Lets a user login with his credentials to obtain a JWT token to
+        use in other API calls
+      parameters:
+      - description: User account
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.UpdateUserEnableStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.UpdateUserEnableStatusRequest'
+      security:
+      - JWT: []
+      summary: Login a User account. Provides JWT
+      tags:
+      - user
 securityDefinitions:
   JWT:
     in: header

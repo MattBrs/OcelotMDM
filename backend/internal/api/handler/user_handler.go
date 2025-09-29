@@ -20,6 +20,18 @@ func NewUserHandler(service *user.Service) *UserHandler {
 	return &UserHandler{service}
 }
 
+// @BasePath /user
+
+// Create a new User
+// @Summary Create a new User account
+// @Schemes
+// @Description Create a new user account with username and password. Default disabled
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param user body user_dto.CreateUserRequest true "User account"
+// @Success 200 {object} user_dto.CreateUserResponse
+// @Router /user/create [post]
 func (h *UserHandler) CreateUser(ctx *gin.Context) {
 	var req user_dto.CreateUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -68,6 +80,20 @@ func (h *UserHandler) CreateUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
+// @BasePath /user
+
+// Logins a User
+// @Summary Login a User account. Provides JWT
+// @Schemes
+// @Description Lets a user login with his credentials to obtain a JWT token to use in other API calls
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param user body user_dto.LoginUserRequest true "User account"
+// @Success 200 {object} user_dto.LoginUserResponse
+// @Error 400 {object} user_dto.LoginUserResponse
+// @Error 500 {object} user_dto.LoginUserResponse
+// @Router /user/login [post]
 func (h *UserHandler) Login(ctx *gin.Context) {
 	var req user_dto.LoginUserRequest
 	err := ctx.ShouldBindJSON(&req)
@@ -107,6 +133,24 @@ func (h *UserHandler) Login(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
+// @BasePath /user
+
+// Logins a User
+// @Summary Login a User account. Provides JWT
+// @Schemes
+// @Description Lets a user login with his credentials to obtain a JWT token to use in other API calls
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param user body user_dto.UpdateUserEnableStatusRequest true "User account"
+// @Success 200 {object} user_dto.UpdateUserEnableStatusRequest
+// @Error 400 {object} user_dto.UpdateUserEnableStatusResponseErr
+// @Error 500 {object} user_dto.UpdateUserEnableStatusResponseErr
+// @Router /user/update/enabled [post]
+// @securityDefinitions.apiKey JWT
+// @in header
+// @name Authorization
+// @Security JWT
 func (h *UserHandler) EnableUser(ctx *gin.Context) {
 	ctxUser, ok := ctx.Get("currentUser")
 	if !ok {

@@ -131,6 +131,113 @@
                     }
                 }
             }
+        },
+        "/user/create": {
+            "post": {
+                "description": "Create a new user account with username and password. Default disabled",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Create a new User account",
+                "parameters": [
+                    {
+                        "description": "User account",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.CreateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.CreateUserResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/login": {
+            "post": {
+                "description": "Lets a user login with his credentials to obtain a JWT token to use in other API calls",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Login a User account. Provides JWT",
+                "parameters": [
+                    {
+                        "description": "User account",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.LoginUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.LoginUserResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/update/enabled": {
+            "post": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Lets a user login with his credentials to obtain a JWT token to use in other API calls",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Login a User account. Provides JWT",
+                "parameters": [
+                    {
+                        "description": "User account",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.UpdateUserEnableStatusRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.UpdateUserEnableStatusRequest"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -180,6 +287,73 @@
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.CreateUserRequest": {
+            "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.CreateUserResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.LoginUserRequest": {
+            "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.LoginUserResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_MattBrs_OcelotMDM_internal_api_dto_user_dto.UpdateUserEnableStatusRequest": {
+            "type": "object",
+            "required": [
+                "enabled",
+                "username"
+            ],
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "username": {
                     "type": "string"
                 }
             }
