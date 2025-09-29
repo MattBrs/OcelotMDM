@@ -20,15 +20,15 @@
 
 ## 🚦 Roadmap (Draft)
 
-- [ ] Backend core API
-- [ ] MQTT broker setup
-- [ ] Linux agent MVP
+- [x] Backend core API
+- [x] MQTT broker setup
+- [x] Linux agent MVP
 - [ ] Android agent MVP
-- [ ] Enrollment flow (OTP, cert exchange)
-- [ ] VPN tunnel automation
+- [x] Enrollment flow (OTP, cert exchange)
+- [x] VPN tunnel automation
 - [ ] Web dashboard basic version
 - [ ] Logging and metrics pipeline (Elastic)
-- [ ] Deployment scripts & NGINX config
+- [x] Deployment scripts & NGINX config
 
 ---
 
