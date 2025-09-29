@@ -1,12 +1,13 @@
+//@securityDefinitions.apikey JWT
+//@in header
+//@name Authorization
+
 package main
 
 import (
 	"context"
 	"fmt"
-	"os"
-	"strconv"
-	"time"
-
+	docs "github.com/MattBrs/OcelotMDM/docs"
 	"github.com/MattBrs/OcelotMDM/internal/api/handler"
 	"github.com/MattBrs/OcelotMDM/internal/api/interceptor"
 	"github.com/MattBrs/OcelotMDM/internal/domain/binary"
@@ -25,7 +26,12 @@ import (
 	"github.com/MattBrs/OcelotMDM/internal/storage"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	swaggerfiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"os"
+	"strconv"
+	"time"
 )
 
 type Handlers struct {
@@ -98,6 +104,8 @@ func initMongoConn() *storage.MongoConnection {
 }
 
 func setGinRoutes(router *gin.Engine, handlers Handlers, authIntr *interceptor.Interceptor) {
+	docs.SwaggerInfo.BasePath = "/"
+
 	router.POST("/devices", handlers.deviceHandler.AddNewDevice)
 	router.GET(
 		"/devices",
@@ -165,6 +173,14 @@ func setGinRoutes(router *gin.Engine, handlers Handlers, authIntr *interceptor.I
 		"/binary/get",
 		handlers.binaryHandler.GetBinary,
 	)
+
+	docs.SwaggerInfo.Title = "OcelotMDM API"
+	docs.SwaggerInfo.Version = "1.0"
+	docs.SwaggerInfo.Description = "This are the main API for OcelotMDM"
+	docs.SwaggerInfo.Host = "localhost"
+	docs.SwaggerInfo.BasePath = "/"
+	docs.SwaggerInfo.Schemes = []string{"https"}
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 }
 
 func newMqttClient() *ocelot_mqtt.MqttClient {

@@ -22,6 +22,18 @@ func NewDeviceHandler(service *device.Service) *DeviceHandler {
 	return &DeviceHandler{service, namegenerator.NewNameGenerator(seed)}
 }
 
+// @BasePath /devices
+
+// Enroll a new device
+// @Summary enroll a new device to the network
+// @Schemes
+// @Description enroll device
+// @Tags devices
+// @Accept json
+// @Produce json
+// @Param device body device_dto.DeviceCreationRequest true "Device Data"
+// @Success 200 {object} device_dto.DeviceCreationResponse
+// @Router /devices [post]
 func (h *DeviceHandler) AddNewDevice(ctx *gin.Context) {
 	var req device_dto.DeviceCreationRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -86,6 +98,25 @@ func (h *DeviceHandler) AddNewDevice(ctx *gin.Context) {
 	)
 }
 
+// @BasePath /devices
+
+// List devices
+// @Summary show a filtered list of the devices
+// @Schemes
+// @Description show a filtered list of the devices previously enrolled
+// @Tags devices
+// @Accept json
+// @Produce json
+// @Param id query string false "Device ID"
+// @Param status query string false "Device Status"
+// @Param name query string false "Device Name"
+// @Param architecture query string false "Device Architecture"
+// @Success 200 {object} []device.Device
+// @Router /devices [get]
+// @securityDefinitions.apiKey token
+// @in header
+// @name Authorization
+// @Security JWT
 func (h *DeviceHandler) ListDevices(ctx *gin.Context) {
 	id := ctx.Query("id")
 	status := ctx.Query("status")
@@ -111,6 +142,22 @@ func (h *DeviceHandler) ListDevices(ctx *gin.Context) {
 	ctx.JSON(http.StatusFound, devices)
 }
 
+// @BasePath /devices
+
+// Update ip address
+// @Summary update device address
+// @Schemes
+// @Description update known device ip address
+// @Tags devices
+// @Accept json
+// @Produce json
+// @Param device body device_dto.UpdateAddressRequest true "Device New address"
+// @Success 200 {object} device_dto.DeviceCreationResponse
+// @Router /devices/updateAddress [post]
+// @securityDefinitions.apiKey token
+// @in header
+// @name Authorization
+// @Security JWT
 func (h *DeviceHandler) UpdateDeviceAddress(ctx *gin.Context) {
 	var req device_dto.UpdateAddressRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {

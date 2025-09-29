@@ -1,0 +1,151 @@
+definitions:
+  github_com_MattBrs_OcelotMDM_internal_api_dto_device_dto.DeviceCreationRequest:
+    properties:
+      architecture:
+        type: string
+      otp:
+        type: string
+      type:
+        type: string
+    required:
+    - architecture
+    - otp
+    - type
+    type: object
+  github_com_MattBrs_OcelotMDM_internal_api_dto_device_dto.DeviceCreationResponse:
+    properties:
+      name:
+        description: 'TODO: add needed client certificates and configurations in the
+          response'
+        type: string
+      ovpn_file:
+        type: string
+    required:
+    - name
+    - ovpn_file
+    type: object
+  github_com_MattBrs_OcelotMDM_internal_api_dto_device_dto.UpdateAddressRequest:
+    properties:
+      ip_address:
+        type: string
+      name:
+        type: string
+    required:
+    - ip_address
+    - name
+    type: object
+  github_com_MattBrs_OcelotMDM_internal_domain_device.Device:
+    properties:
+      architecture:
+        type: string
+      id:
+        type: string
+      ipaddress:
+        type: string
+      lastSeen:
+        type: integer
+      name:
+        type: string
+      status:
+        type: string
+      supportedCommands:
+        items:
+          type: string
+        type: array
+      tags:
+        items:
+          type: string
+        type: array
+      type:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /devices:
+    get:
+      consumes:
+      - application/json
+      description: show a filtered list of the devices previously enrolled
+      parameters:
+      - description: Device ID
+        in: query
+        name: id
+        type: string
+      - description: Device Status
+        in: query
+        name: status
+        type: string
+      - description: Device Name
+        in: query
+        name: name
+        type: string
+      - description: Device Architecture
+        in: query
+        name: architecture
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_MattBrs_OcelotMDM_internal_domain_device.Device'
+            type: array
+      security:
+      - JWT: []
+      summary: show a filtered list of the devices
+      tags:
+      - devices
+    post:
+      consumes:
+      - application/json
+      description: enroll device
+      parameters:
+      - description: Device Data
+        in: body
+        name: device
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_device_dto.DeviceCreationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_device_dto.DeviceCreationResponse'
+      summary: enroll a new device to the network
+      tags:
+      - devices
+  /devices/updateAddress:
+    post:
+      consumes:
+      - application/json
+      description: update known device ip address
+      parameters:
+      - description: Device New address
+        in: body
+        name: device
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_device_dto.UpdateAddressRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_MattBrs_OcelotMDM_internal_api_dto_device_dto.DeviceCreationResponse'
+      security:
+      - JWT: []
+      summary: update device address
+      tags:
+      - devices
+securityDefinitions:
+  JWT:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
